@@ -1,0 +1,2 @@
+hello entity-replacer!
+It's dummy.txt

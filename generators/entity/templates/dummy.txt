@@ -1,0 +1,2 @@
+hello entity-replacer:entity sub generator!
+It's dummy.txt
