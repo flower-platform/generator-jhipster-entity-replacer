@@ -145,23 +145,31 @@ module.exports = JhipsterGenerator.extend({
 		this.existingEntities.forEach((entityName) => {
           var jsonObj = this.fs.readJSON(`.jhipster/${entityName}.json`);
 		  fullPath = `${javaDir}domain/${entityName}.java`;
-		  this.log(`${chalk.magenta("Processing")} ${fullPath}`);		  
-		  javaText = this.fs.read(`${javaDir}domain/${entityName}.java`);
+		  this.log(`${chalk.magenta("Processing")} ${fullPath}`);	
 		  
+		  // @ApiModelProperty("This is a comment bla bla. <jhipster-entity-replacer> // aici avem cod js pe care... </jhipster-entity-replacer>")  becomes @ApiModelProperty("This is a comment bla bla.") 
 		  var regexApiModelProp = '(@ApiModelProperty\\(.*?)<jhipster-entity-replacer>.*<\\/jhipster-entity-replacer>(.*?\\))';
-		  this.log(regexApiModelProp);
-		  this.replaceContent(`${javaDir}domain/${entityName}.java`, regexApiModelProp, "$1$2", true);
+		  this.replaceContent(fullPath, regexApiModelProp, "$1$2", true);
+		  
+		  var javaText = this.fs.read(fullPath);
+		  // match the whole text between <jhipster-entity-replacer> tags
 		  var re = new RegExp('<jhipster-entity-replacer>(' + regex_matches_everything + '?)<\\/jhipster-entity-replacer>(' + regex_matches_everything + '?)(\\w+);', 'g');
-		  var replacerCallRegex = new RegExp('(replacer\.\\w+\\(.*\\);)|(replacer\.\\w+\\(' + regex_matches_everything + '?function\\s*\\(' + regex_matches_everything + '?\\)\\s*\\{' + regex_matches_everything + '?\\}\\));', 'g');		  
+		  // match each instruction from the text above
+		  var replacerCallRegex = new RegExp('replacer\.\\w+\\(.*\\);|replacer\.\\w+\\(' + regex_matches_everything + '?function\\s*\\(' + regex_matches_everything + '?\\)\\s*\\{' + regex_matches_everything + '?\\}\\);', 'g');		  
+		  // iterate through whole file and get the instructions string between <jhipster-entity-replacer> for each field 
 		  do {
-			m = re.exec(javaText);
+			var m = re.exec(javaText);
 			if (m) {
+				// declared without var as it needs to be available outside this module
 				currentField = m[3];
+				var currentInstructionsString = m[1];
+				// iterate through current instruction string and evaluate each instruction
 				do {
-					q = replacerCallRegex.exec(m[1]);
+					var q = replacerCallRegex.exec(currentInstructionsString);
 					if (q) {
-						this.log(q[0]);
-						eval(q[0]);
+						var instruction = q[0];
+						this.log(instruction);
+						eval(instruction);
 					}
 				} while (q);
 			}
@@ -204,16 +212,18 @@ module.exports = JhipsterGenerator.extend({
 });
 
 
-
+// array holding for each key a function
 registryOfStoredReplacement = [];
 var Replacer = {
   replaceRegex: function(expression1, expression2) {
 	currentEntityReplacerGenerator.log(`${chalk.green('Replacing first match')} for ${expression1} with ${expression2}`); 
-	currentEntityReplacerGenerator.fs.write(path.join(process.cwd(), fullPath), javaText.replace(new RegExp(expression1), expression2));
+	var javaTextSync = currentEntityReplacerGenerator.fs.read(fullPath);
+	currentEntityReplacerGenerator.fs.write(path.join(process.cwd(), fullPath), javaTextSync.replace(new RegExp(expression1), expression2));
   },
   replaceRegexAll: function(expression1, expression2) {
-	currentEntityReplacerGenerator.log(`${chalk.green('Replacing ALL matches')} for ${expression1} with ${expression2}`); 
-	currentEntityReplacerGenerator.fs.write(path.join(process.cwd(), fullPath), javaText.replace(new RegExp(expression1, 'g'), expression2));
+	currentEntityReplacerGenerator.log(`${chalk.green('Replacing ALL matches')} for ${expression1} with ${expression2}`);
+	var javaTextSync = currentEntityReplacerGenerator.fs.read(fullPath);	
+	currentEntityReplacerGenerator.fs.write(path.join(process.cwd(), fullPath), javaTextSync.replace(new RegExp(expression1, 'g'), expression2));
   },
   storeReplacements: function (name, func) {
 	currentEntityReplacerGenerator.log(`${chalk.green('Storing:')} ${name}`);
@@ -222,13 +232,16 @@ var Replacer = {
   applyStoredReplacements: function (storedReplacement) {
 	var functionToBeEvaled = registryOfStoredReplacement[storedReplacement];
 	var that  = this;
+	var javaTextSync = currentEntityReplacerGenerator.fs.read(fullPath);
+	// insert `replacer = that` in the code that will be executed in order to have the correct reference for `replacer` param
 	functionToBeEvaled = functionToBeEvaled.toString().replace(new RegExp('(function\\s*\\(replacer\\)\\s*\\{)'), '$1\nreplacer=that;');
 	currentEntityReplacerGenerator.log(`${chalk.green('Applying stored replacement:')} ${storedReplacement}`);
 	eval('(' + functionToBeEvaled + ')();');
   },
   insertElement: function (insertion) {
+	var javaTextSync = currentEntityReplacerGenerator.fs.read(fullPath);
 	currentEntityReplacerGenerator.log(`${chalk.green('Inserting before field')} ${currentField} ${insertion}`); 
-	currentEntityReplacerGenerator.fs.write(path.join(process.cwd(), fullPath), javaText.replace(new RegExp("(.+" + currentField + ";)"), '\t' + insertion + '\n$1'));
+	currentEntityReplacerGenerator.fs.write(path.join(process.cwd(), fullPath), javaTextSync.replace(new RegExp("(.+" + currentField + ";)"), '\t' + insertion + '\n$1'));
   }
 };
 

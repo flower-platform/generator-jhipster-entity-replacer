@@ -156,7 +156,7 @@ module.exports = JhipsterGenerator.extend({
 		  fullPath = `${javaDir}domain/${entityName}.java`;
 		  this.log(`${javaDir}domain/${entityName}.java`);
 		  var re = new RegExp('<jhipster-entity-replacer>((?:\\S|\\s)*?)<\\/jhipster-entity-replacer>((?:\\S|\\s)*?)(\\w+);', 'g');
-		  var replacerCallRegex = new RegExp('(replacer.\\w+\\(.*\\);)|(replacer.\\w+\\(.[\\s\\S]*?function\\s*\\([\\s\\S]*?\\)\\s*\\{[\\s\\S]*?\\}\\));', 'g');
+		  var replacerCallRegex = new RegExp('(replacer.\\w+\\(.*\\);)|(replacer.\\w+\\(.[\\s\\S]*?function\\s*\\([\\s\\S]*?\\)\\s*\\{[\\s\\S]*?\\}\s*?\\));', 'g');
 		  do {
 			m = re.exec(javaText);
 			if (m) {
