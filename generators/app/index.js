@@ -7,6 +7,7 @@ const BaseGenerator = require('generator-jhipster/generators/generator-base');
 const jhipsterConstants = require('generator-jhipster/generators/generator-constants');
 const fs = require('fs');
 const path = require('path');
+const formatUtilsJH = require('jhipster-core/lib/utils/format_utils.js');
 
 const JhipsterGenerator = generator.extend({});
 util.inherits(JhipsterGenerator, BaseGenerator);
@@ -62,8 +63,7 @@ module.exports = JhipsterGenerator.extend({
             {
                 type: 'input',
                 name: 'message',
-                message: 'Please put something here',
-                default: 'hello world!'
+                message: 'Please type any key if you agree to purceed'
             }
         ];
 
@@ -73,7 +73,7 @@ module.exports = JhipsterGenerator.extend({
             done();
         });
     },
-
+	
     writing() {
         // function to use directly template
         this.template = function (source, destination) {
@@ -135,11 +135,6 @@ module.exports = JhipsterGenerator.extend({
         if (this.buildTool === 'gradle') {
             this.template('dummy.txt', 'dummy-gradle.txt');
         }
-        try {
-            this.registerModule('generator-jhipster-entity-replacer', 'entity', 'post', 'entity', 'Parses javascript code within &lt;jhipster-entity-replacer&gt; and executes it as is');
-        } catch (err) {
-            this.log(`${chalk.red.bold('WARN!')} Could not register as a jhipster entity post creation hook...\n`);
-        }
 		currentEntityReplacerGenerator = this;
 		this.log('\n---Updating entities files ---');
 		this.existingEntities.forEach((entityName) => {
@@ -154,8 +149,6 @@ module.exports = JhipsterGenerator.extend({
 		  var javaText = this.fs.read(fullPath);
 		  // match the whole text between <jhipster-entity-replacer> tags
 		  var re = new RegExp('<jhipster-entity-replacer>(' + regex_matches_everything + '?)<\\/jhipster-entity-replacer>(' + regex_matches_everything + '?)(\\w+);', 'g');
-		  // match each instruction from the text above
-		  var replacerCallRegex = new RegExp('replacer\.\\w+\\(.*\\);|replacer\.\\w+\\(' + regex_matches_everything + '?function\\s*\\(' + regex_matches_everything + '?\\)\\s*\\{' + regex_matches_everything + '?\\}\\);', 'g');		  
 		  // iterate through whole file and get the instructions string between <jhipster-entity-replacer> for each field 
 		  do {
 			var m = re.exec(javaText);
@@ -164,19 +157,21 @@ module.exports = JhipsterGenerator.extend({
 				currentField = m[3];
 				var currentInstructionsString = m[1];
 				// iterate through current instruction string and evaluate each instruction
-				do {
-					var q = replacerCallRegex.exec(currentInstructionsString);
-					if (q) {
-						var instruction = q[0];
-						this.log(instruction);
-						eval(instruction);
-					}
-				} while (q);
+				var formattedComment = formatUtilsJH.formatComment(currentInstructionsString)
+				this.log(`${chalk.blue("Evaluation of ")} ${formattedComment.replace(/\\"/g, '"')}`)
+				eval(formattedComment.replace(/\\"/g, '"'));
 			}
 		} while (m);
         });
     },
 
+   registering () {
+		try {
+            this.registerModule('generator-jhipster-entity-replacer', 'entity', 'post', 'entity', 'Parses javascript code within tags and executes it as is');
+        } catch (err) {
+            this.log(`${chalk.red.bold('WARN!')} Could not register as a jhipster entity post creation hook...\n`);
+        }
+	},
     install() {
         let logMsg =
             `To install your dependencies manually, run: ${chalk.yellow.bold(`${this.clientPackageManager} install`)}`;
@@ -233,7 +228,7 @@ var Replacer = {
 	var functionToBeEvaled = registryOfStoredReplacement[storedReplacement];
 	var that  = this;
 	var javaTextSync = currentEntityReplacerGenerator.fs.read(fullPath);
-	// insert `replacer = that` in the code that will be executed in order to have the correct reference for `replacer` param
+	// insert `replacer = that` in the code that will be executed in order to have the correct reference for `replacer` param 
 	functionToBeEvaled = functionToBeEvaled.toString().replace(new RegExp('(function\\s*\\(replacer\\)\\s*\\{)'), '$1\nreplacer=that;');
 	currentEntityReplacerGenerator.log(`${chalk.green('Applying stored replacement:')} ${storedReplacement}`);
 	eval('(' + functionToBeEvaled + ')();');
