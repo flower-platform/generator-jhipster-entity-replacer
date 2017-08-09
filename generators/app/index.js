@@ -51,8 +51,7 @@ module.exports = JhipsterGenerator.extend({
       existingEntityNames.forEach((entry) => {
         if (entry.indexOf('.json') !== -1) {
           const entityName = entry.replace('.json', '');
-          existingEntities.push(entityName);
-		  this.log(entityName);		   
+          existingEntities.push(entityName);   
         }
       });
       this.existingEntities = existingEntities;
@@ -63,7 +62,7 @@ module.exports = JhipsterGenerator.extend({
             {
                 type: 'input',
                 name: 'message',
-                message: 'Please type any key if you agree to purceed'
+                message: 'Please type any key if you agree to proceed'
             }
         ];
 
@@ -102,61 +101,29 @@ module.exports = JhipsterGenerator.extend({
 
         // variable from questions
         this.message = this.props.message;
-
-        // show all variables
-        this.log('\n--- some config read from config ---');
-        this.log(`baseName=${this.baseName}`);
-        this.log(`packageName=${this.packageName}`);
-        this.log(`clientFramework=${this.clientFramework}`);
-        this.log(`clientPackageManager=${this.clientPackageManager}`);
-        this.log(`buildTool=${this.buildTool}`);
-
-        this.log('\n--- some function ---');
-        this.log(`angularAppName=${this.angularAppName}`);
-
-        this.log('\n--- some const ---');
-        this.log(`javaDir=${javaDir}`);
-        this.log(`resourceDir=${resourceDir}`);
-        this.log(`webappDir=${webappDir}`);
-
-        this.log('\n--- variables from questions ---');
-        this.log(`\nmessage=${this.message}`);
-        this.log('------\n');
-
-        if (this.clientFramework === 'angular1') {
-            this.template('dummy.txt', 'dummy-angular1.txt');
-        }
-        if (this.clientFramework === 'angular2') {
-            this.template('dummy.txt', 'dummy-angular2.txt');
-        }
-        if (this.buildTool === 'maven') {
-            this.template('dummy.txt', 'dummy-maven.txt');
-        }
-        if (this.buildTool === 'gradle') {
-            this.template('dummy.txt', 'dummy-gradle.txt');
-        }
+		
 		currentEntityReplacerGenerator = this;
 		this.log('\n---Updating entities files ---');
 		this.existingEntities.forEach((entityName) => {
           var jsonObj = this.fs.readJSON(`.jhipster/${entityName}.json`);
 		  fullPath = `${javaDir}domain/${entityName}.java`;
-		  this.log(`${chalk.magenta("Processing")} ${fullPath}`);	
+		  this.log(`${chalk.magenta("Processing")} ${fullPath}`);
 		  
 		  // @ApiModelProperty("This is a comment bla bla. <jhipster-entity-replacer> // aici avem cod js pe care... </jhipster-entity-replacer>")  becomes @ApiModelProperty("This is a comment bla bla.") 
-		  var regexApiModelProp = '(@ApiModelProperty\\(.*?)<jhipster-entity-replacer>.*<\\/jhipster-entity-replacer>(.*?\\))';
+		  var regexApiModelProp = '(@ApiModelProperty|@ApiModel\\(.*?)<jhipster-entity-replacer>.*<\\/jhipster-entity-replacer>(.*?\\))';
 		  this.replaceContent(fullPath, regexApiModelProp, "$1$2", true);
 		  
 		  var javaText = this.fs.read(fullPath);
 		  // match the whole text between <jhipster-entity-replacer> tags
-		  var re = new RegExp('<jhipster-entity-replacer>(' + regex_matches_everything + '?)<\\/jhipster-entity-replacer>(' + regex_matches_everything + '?)(\\w+);', 'g');
+		  var re = new RegExp('<jhipster-entity-replacer>([\\s\\S]*?)<\\/jhipster-entity-replacer>[\\s\\S]*?(?:(.*class[\\s\\S]*?\\{)|.*?(\\w+);)', 'g');
 		  // iterate through whole file and get the instructions string between <jhipster-entity-replacer> for each field 
 		  do {
 			var m = re.exec(javaText);
 			if (m) {
 				// declared without var as it needs to be available outside this module
-				currentField = m[3];
+				currentFieldOrClass = m[2] ? m[2] : m[3];
 				var currentInstructionsString = m[1];
-				// iterate through current instruction string and evaluate each instruction
+				// eavluate whole current instruction string
 				var formattedComment = formatUtilsJH.formatComment(currentInstructionsString)
 				this.log(`${chalk.blue("Evaluation of ")} ${formattedComment.replace(/\\"/g, '"')}`)
 				eval(formattedComment.replace(/\\"/g, '"'));
@@ -164,21 +131,21 @@ module.exports = JhipsterGenerator.extend({
 		} while (m);
         });
     },
-
-   registering () {
+	// temporary deactivated
+   /*registering () {
 		try {
             this.registerModule('generator-jhipster-entity-replacer', 'entity', 'post', 'entity', 'Parses javascript code within tags and executes it as is');
         } catch (err) {
             this.log(`${chalk.red.bold('WARN!')} Could not register as a jhipster entity post creation hook...\n`);
         }
-	},
+	},*/
     install() {
         let logMsg =
             `To install your dependencies manually, run: ${chalk.yellow.bold(`${this.clientPackageManager} install`)}`;
 
         if (this.clientFramework === 'angular1') {
             logMsg =
-                `To install your dependencies manually, run: ${chalk.yellow.bold(`${this.clientPackageManager} install & bower install`)}`;
+                `To install	 your dependencies manually, run: ${chalk.yellow.bold(`${this.clientPackageManager} install & bower install`)}`;
         }
         const injectDependenciesAndConstants = (err) => {
             if (err) {
@@ -235,8 +202,45 @@ var Replacer = {
   },
   insertElement: function (insertion) {
 	var javaTextSync = currentEntityReplacerGenerator.fs.read(fullPath);
-	currentEntityReplacerGenerator.log(`${chalk.green('Inserting before field')} ${currentField} ${insertion}`); 
-	currentEntityReplacerGenerator.fs.write(path.join(process.cwd(), fullPath), javaTextSync.replace(new RegExp("(.+" + currentField + ";)"), '\t' + insertion + '\n$1'));
+	currentEntityReplacerGenerator.log(`${chalk.green('Inserting before field')} ${currentFieldOrClass} ${insertion}`);
+	var isClass = currentFieldOrClass.includes("class");
+	var regex =  isClass ? new RegExp("(\s*" + currentFieldOrClass + "\\s*)") : new RegExp("(.*" + currentFieldOrClass + "\\s*;)");
+	var charBeforeInsertion = isClass ? '' : '\t';
+	currentEntityReplacerGenerator.log(`${chalk.green('Inserting:Regex')} ${regex.toString()}`);	
+	currentEntityReplacerGenerator.fs.write(path.join(process.cwd(), fullPath), javaTextSync.replace(regex, charBeforeInsertion + insertion + '\n$1'));
+  },
+  replaceRegexWithCurlyBraceBlock: function (regexString) {
+	currentEntityReplacerGenerator.log(`${chalk.green('Deleting method that matches regex ')} ${regexString}`);
+	var javaTextSync = currentEntityReplacerGenerator.fs.read(fullPath);
+	var curlyBracesStack = [];
+	// where method starts
+	var positionOfMatch = javaTextSync.search(new RegExp(regexString));
+	if (positionOfMatch != -1) {
+		indexOfFirstBracket = javaTextSync.indexOf("{", positionOfMatch);
+		if (indexOfFirstBracket != -1) {
+			curlyBracesStack.push("{");
+			// will be incremented as long as each bracket has a match and 
+			// it will denote the end of method, at the end of this loop
+			var startIndex = indexOfFirstBracket;
+			// brackets must not be taken into consideration if we are inside " or '
+			var isInSingleQuotation = false;
+			var isInDoubleQuotation = false;
+			while (curlyBracesStack.length != 0) {
+				++startIndex;
+				if (javaTextSync.charAt(startIndex) == '"') {
+					isInDoubleQuotation =  !isInDoubleQuotation;
+				} else if (javaTextSync.charAt(startIndex) == "'") {
+					isInSingleQuotation = !isInSingleQuotation;
+				} else if (!isInDoubleQuotation && !isInSingleQuotation && javaTextSync.charAt(startIndex) == "{") {
+					curlyBracesStack.push("{");
+				} else if (!isInDoubleQuotation && !isInSingleQuotation && javaTextSync.charAt(startIndex) == "}") {
+					curlyBracesStack.pop();
+				}
+			}
+			currentEntityReplacerGenerator.log(`${chalk.green('Matched full method body from ')} ${positionOfMatch} to ${startIndex}`); 
+			currentEntityReplacerGenerator.fs.write(path.join(process.cwd(), fullPath), javaTextSync.replace(javaTextSync.substring(positionOfMatch, startIndex + 1), ""));	
+		}
+	}
   }
 };
 
