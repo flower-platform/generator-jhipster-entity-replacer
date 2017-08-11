@@ -8,7 +8,7 @@ const jhipsterConstants = require('generator-jhipster/generators/generator-const
 const fs = require('fs');
 const path = require('path');
 const formatUtilsJH = require('jhipster-core/lib/utils/format_utils.js');
-
+const ncp = require('ncp').ncp;
 const JhipsterGenerator = generator.extend({});
 util.inherits(JhipsterGenerator, BaseGenerator);
 
@@ -95,7 +95,7 @@ module.exports = JhipsterGenerator.extend({
         this.angularAppName = this.getAngularAppName();
 
         // use constants from generator-constants.js
-        const javaDir = `${jhipsterConstants.SERVER_MAIN_SRC_DIR + this.packageFolder}/`;
+        javaDir = `${jhipsterConstants.SERVER_MAIN_SRC_DIR + this.packageFolder}/`;
         const resourceDir = jhipsterConstants.SERVER_MAIN_RES_DIR;
         const webappDir = jhipsterConstants.CLIENT_MAIN_SRC_DIR;
 
@@ -106,11 +106,11 @@ module.exports = JhipsterGenerator.extend({
 		this.log('\n---Updating entities files ---');
 		this.existingEntities.forEach((entityName) => {
           var jsonObj = this.fs.readJSON(`.jhipster/${entityName}.json`);
-		  fullPath = `${javaDir}domain/${entityName}.java`;
+		  fullPath = `jhipster-import-jdl/${javaDir}domain/${entityName}.java`;
 		  this.log(`${chalk.magenta("Processing")} ${fullPath}`);
 		  
 		  // @ApiModelProperty("This is a comment bla bla. <jhipster-entity-replacer> // aici avem cod js pe care... </jhipster-entity-replacer>")  becomes @ApiModelProperty("This is a comment bla bla.") 
-		  var regexApiModelProp = '(@ApiModelProperty|@ApiModel\\(.*?)<jhipster-entity-replacer>.*<\\/jhipster-entity-replacer>(.*?\\))';
+		  var regexApiModelProp = '((?:@ApiModelProperty|@ApiModel)\\(.*?)<jhipster-entity-replacer>.*<\\/jhipster-entity-replacer>(.*?\\))';
 		  this.replaceContent(fullPath, regexApiModelProp, "$1$2", true);
 		  
 		  var javaText = this.fs.read(fullPath);
@@ -128,8 +128,7 @@ module.exports = JhipsterGenerator.extend({
 				this.log(`${chalk.blue("Evaluation of ")} ${formattedComment.replace(/\\"/g, '"')}`)
 				eval(formattedComment.replace(/\\"/g, '"'));
 			}
-		} while (m);
-        });
+		} while (m);});
     },
 	// temporary deactivated
    /*registering () {
@@ -139,36 +138,14 @@ module.exports = JhipsterGenerator.extend({
             this.log(`${chalk.red.bold('WARN!')} Could not register as a jhipster entity post creation hook...\n`);
         }
 	},*/
-    install() {
-        let logMsg =
-            `To install your dependencies manually, run: ${chalk.yellow.bold(`${this.clientPackageManager} install`)}`;
-
-        if (this.clientFramework === 'angular1') {
-            logMsg =
-                `To install	 your dependencies manually, run: ${chalk.yellow.bold(`${this.clientPackageManager} install & bower install`)}`;
-        }
-        const injectDependenciesAndConstants = (err) => {
-            if (err) {
-                this.warning('Install of dependencies failed!');
-                this.log(logMsg);
-            } else if (this.clientFramework === 'angular1') {
-                this.spawnCommand('gulp', ['install']);
-            }
-        };
-        const installConfig = {
-            bower: this.clientFramework === 'angular1',
-            npm: this.clientPackageManager !== 'yarn',
-            yarn: this.clientPackageManager === 'yarn',
-            callback: injectDependenciesAndConstants
-        };
-        if (this.options['skip-install']) {
-            this.log(logMsg);
-        } else {
-            this.installDependencies(installConfig);
-        }
-    },
-
     end() {
+		currentEntityReplacerGenerator.log(`${chalk.red("Copying `domain` entities directory ")} from jhipster-import-jdl to project root`);
+		ncp(`jhipster-import-jdl/${javaDir}domain/`, `${javaDir}domain/`, {"clobber": true}, function (err) {
+			if (err) {
+				return currentEntityReplacerGenerator.log(err);
+			}
+			currentEntityReplacerGenerator.log(`${chalk.blue("\nCopying `domain` entities directory ")} from jhipster-import-jdl to project root`);
+		});
         this.log('End of entity-replacer generator');
     }
 });
@@ -188,7 +165,7 @@ var Replacer = {
 	currentEntityReplacerGenerator.fs.write(path.join(process.cwd(), fullPath), javaTextSync.replace(new RegExp(expression1, 'g'), expression2));
   },
   storeReplacements: function (name, func) {
-	currentEntityReplacerGenerator.log(`${chalk.green('Storing:')} ${name}`);
+	//currentEntityReplacerGenerator.log(`${chalk.green('Storing:')} ${name}`);
 	registryOfStoredReplacement[name] = func;
   },
   applyStoredReplacements: function (storedReplacement) {
@@ -245,3 +222,27 @@ var Replacer = {
 };
 
 var replacer = Object.create(Replacer);
+
+// predefined commands
+replacer.storeReplacements("insertAnnotGenEntityDtoAboveClass", function(replacer) {
+	replacer.insertElement("@GenEntityDto(superClass = TempAbstractDto.class)");
+	replacer.replaceRegex("(package\s*.*;)", "$1\nimport com.crispico.annotation.definition.GenEntityDto;");
+	replacer.replaceRegex("(package\s*.*;)", "$1\nimport com.crispico.absence_management.shared.dto.TempAbstractDto;");
+});
+
+replacer.storeReplacements("insertAnnotGenDtoCrudRepositoryAndServiceAboveClass", function(replacer) {
+	replacer.insertElement("@GenDtoCrudRepositoryAndService");
+	replacer.replaceRegex("(package\s*.*;)", "$1\nimport com.crispico.annotation.definition.GenDtoCrudRepositoryAndService;");
+});
+
+replacer.storeReplacements("addImportForAnotForGenEntityDtoField", function(replacer) {
+	replacer.replaceRegex("(package\s*.*;)", "$1\nimport com.crispico.annotation.definition.util.EntityConstants.FieldInclusion;");
+});
+
+replacer.storeReplacements("addImportForFieldInclusion", function(replacer) {
+	replacer.replaceRegex("(package\s*.*;)", "$1\nimport com.crispico.annotation.definition.GenEntityDtoField;");
+});
+
+replacer.storeReplacements("insertAnotGenEntityDtoFieldAboveField", function(replacer) {
+	replacer.insertElement("@GenEntityDtoField(inclusion=FieldInclusion.EXCLUDE)");
+});
