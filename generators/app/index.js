@@ -125,7 +125,7 @@ module.exports = JhipsterGenerator.extend({
 				var currentInstructionsString = m[1];
 				// eavluate whole current instruction string
 				var formattedComment = formatUtilsJH.formatComment(currentInstructionsString)
-				this.log(`${chalk.cyanBright("Evaluation of ")} ${formattedComment.replace(/\\"/g, '"')}`)
+				this.log(`${chalk.cyan("Evaluation of ")} ${formattedComment.replace(/\\"/g, '"')}`)
 				eval(formattedComment.replace(/\\"/g, '"'));
 			}
 		} while (m);});
@@ -143,7 +143,7 @@ module.exports = JhipsterGenerator.extend({
 			if (err) {
 				return currentEntityReplacerGenerator.log(err);
 			}
-			currentEntityReplacerGenerator.log(`${chalk.cyanBright("\nCopying `domain` entities directory ")} from jhipster-import-jdl to project root`);
+			currentEntityReplacerGenerator.log(`${chalk.cyan("\nCopying `domain` entities directory ")} from jhipster-import-jdl to project root`);
 		});
     }
 });
