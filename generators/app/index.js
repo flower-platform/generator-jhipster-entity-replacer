@@ -125,7 +125,7 @@ module.exports = JhipsterGenerator.extend({
 				var currentInstructionsString = m[1];
 				// eavluate whole current instruction string
 				var formattedComment = formatUtilsJH.formatComment(currentInstructionsString)
-				this.log(`${chalk.blue("Evaluation of ")} ${formattedComment.replace(/\\"/g, '"')}`)
+				this.log(`${chalk.cyanBright("Evaluation of ")} ${formattedComment.replace(/\\"/g, '"')}`)
 				eval(formattedComment.replace(/\\"/g, '"'));
 			}
 		} while (m);});
@@ -139,14 +139,12 @@ module.exports = JhipsterGenerator.extend({
         }
 	},*/
     end() {
-		currentEntityReplacerGenerator.log(`${chalk.red("Copying `domain` entities directory ")} from jhipster-import-jdl to project root`);
 		ncp(`jhipster-import-jdl/${javaDir}domain/`, `${javaDir}domain/`, {"clobber": true}, function (err) {
 			if (err) {
 				return currentEntityReplacerGenerator.log(err);
 			}
-			currentEntityReplacerGenerator.log(`${chalk.blue("\nCopying `domain` entities directory ")} from jhipster-import-jdl to project root`);
+			currentEntityReplacerGenerator.log(`${chalk.cyanBright("\nCopying `domain` entities directory ")} from jhipster-import-jdl to project root`);
 		});
-        this.log('End of entity-replacer generator');
     }
 });
 
