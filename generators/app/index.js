@@ -216,6 +216,11 @@ var Replacer = {
 			currentEntityReplacerGenerator.fs.write(path.join(process.cwd(), fullPath), javaTextSync.replace(javaTextSync.substring(positionOfMatch, startIndex + 1), ""));	
 		}
 	}
+  },
+  insertBeforeElement: function (elementName, insertion) {
+	currentEntityReplacerGenerator.log(`${chalk.green('Inserting before element ')} ${elementName} ${insertion}`);	
+	var javaTextSync = currentEntityReplacerGenerator.fs.read(fullPath);
+	currentEntityReplacerGenerator.fs.write(path.join(process.cwd(), fullPath), javaTextSync.replace(new RegExp("(.*private.*" + elementName + ".*;)"), '\t' + insertion + '\n$1'));
   }
 };
 
@@ -233,14 +238,13 @@ replacer.storeReplacements("insertAnnotGenDtoCrudRepositoryAndServiceAboveClass"
 	replacer.replaceRegex("(package\s*.*;)", "$1\nimport com.crispico.annotation.definition.GenDtoCrudRepositoryAndService;");
 });
 
-replacer.storeReplacements("addImportForAnotForGenEntityDtoField", function(replacer) {
-	replacer.replaceRegex("(package\s*.*;)", "$1\nimport com.crispico.annotation.definition.util.EntityConstants.FieldInclusion;");
-});
-
-replacer.storeReplacements("addImportForFieldInclusion", function(replacer) {
+replacer.storeReplacements("addImportForGenEntityDtoField", function(replacer) {
 	replacer.replaceRegex("(package\s*.*;)", "$1\nimport com.crispico.annotation.definition.GenEntityDtoField;");
 });
 
+replacer.storeReplacements("addImportForFieldInclusion", function(replacer) {
+	replacer.replaceRegex("(package\s*.*;)", "$1\nimport com.crispico.annotation.definition.util.EntityConstants.FieldInclusion;");
+});
 replacer.storeReplacements("insertAnotGenEntityDtoFieldAboveField", function(replacer) {
 	replacer.insertElement("@GenEntityDtoField(inclusion=FieldInclusion.EXCLUDE)");
 });
