@@ -106,7 +106,7 @@ module.exports = JhipsterGenerator.extend({
 		this.log('\n---Updating entities files ---');
 		this.existingEntities.forEach((entityName) => {
           var jsonObj = this.fs.readJSON(`.jhipster/${entityName}.json`);
-		  fullPath = `jhipster-import-jdl/${javaDir}domain/${entityName}.java`;
+		  fullPath = `${javaDir}domain/${entityName}.java`;
 		  this.log(`${chalk.magenta("Processing")} ${fullPath}`);
 		  
 		  // @ApiModelProperty("This is a comment bla bla. <jhipster-entity-replacer> // aici avem cod js pe care... </jhipster-entity-replacer>")  becomes @ApiModelProperty("This is a comment bla bla.") 
@@ -131,15 +131,15 @@ module.exports = JhipsterGenerator.extend({
 		} while (m);});
     },
 	// temporary deactivated
-   /*registering () {
+   registering () {
 		try {
             this.registerModule('generator-jhipster-entity-replacer', 'entity', 'post', 'entity', 'Parses javascript code within tags and executes it as is');
         } catch (err) {
             this.log(`${chalk.red.bold('WARN!')} Could not register as a jhipster entity post creation hook...\n`);
         }
-	},*/
+	},
     end() {
-		ncp(`jhipster-import-jdl/${javaDir}domain/`, `${javaDir}domain/`, {"clobber": true}, function (err) {
+		ncp(`${javaDir}domain/`, `../${javaDir}domain/`, {"clobber": true}, function (err) {
 			if (err) {
 				return currentEntityReplacerGenerator.log(err);
 			}
