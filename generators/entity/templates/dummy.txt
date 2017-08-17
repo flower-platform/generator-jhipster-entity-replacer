@@ -1,2 +1,2 @@
-hello entity-replacer:entity sub generator!
+hello hook-test-demo:entity sub generator!
 It's dummy.txt

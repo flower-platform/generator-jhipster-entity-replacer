@@ -1,2 +1,2 @@
-hello entity-replacer!
+hello hook-test-demo!
 It's dummy.txt
