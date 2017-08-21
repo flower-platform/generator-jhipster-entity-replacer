@@ -44,7 +44,7 @@ npm update -g  https://github.com/flower-platform/generator-jhipster-entity-repl
 
 # Usage
 ```bash
-cd <project folder (where .jdl file is>
+cd <project folder (where .jdl file is)>
 ```
 ## Running for all existing entities:
 ```bash
@@ -54,7 +54,7 @@ yo jhipster-entity-replacer
 
 ## Running for new/updated entities as hook:
 ```bash
-yo jhipster:import-jdl <jdl_file> <--force>
+yo jhipster:import-jdl <jdl_file> --force
 ```
 # License
 
