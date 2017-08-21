@@ -19,7 +19,7 @@ As this is a [JHipster](http://jhipster.github.io/) module, we expect you have J
 To install this module:
 
 ```bash
-yarn global add generator-jhipster-entity-replacer
+yarn global add https://github.com/flower-platform/generator-jhipster-entity-replacer
 ```
 
 To update this module:
@@ -39,11 +39,23 @@ npm install -g generator-jhipster-entity-replacer
 To update this module:
 
 ```bash
-npm update -g generator-jhipster-entity-replacer
+npm update -g  https://github.com/flower-platform/generator-jhipster-entity-replacer
 ```
 
 # Usage
+```bash
+cd <project folder (where .jdl file is>
+```
+## Running for all existing entities:
+```bash
+yo jhipster-entity-replacer
+```
 
+
+## Running for new/updated entities as hook:
+```bash
+yo jhipster:import-jdl <jdl_file> <--force>
+```
 # License
 
 
