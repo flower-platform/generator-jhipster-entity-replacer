@@ -35,10 +35,6 @@ module.exports = JhipsterGenerator.extend({
     },
 
   prompting() {
-	    if (this.abort) {
-			return;
-		}
-
         // don't prompt if data are imported from a file
         if (this.entityConfig.useConfigurationFile == true && this.entityConfig.data && typeof this.entityConfig.data.yourOptionKey !== 'undefined') {
             this.yourOptionKey = this.entityConfig.data.yourOptionKey;
@@ -63,11 +59,7 @@ module.exports = JhipsterGenerator.extend({
 
     writing: {
         updateFiles() {
-
-			if (this.abort) {
-				return;
-			}
-			if (!this.enableReplacer) {
+			if (this.abort || !this.enableReplacer) {
 				return;
 			}
 
@@ -82,6 +74,9 @@ module.exports = JhipsterGenerator.extend({
         },
 
         writeFiles() {
+			if (this.abort || !this.enableReplacer) {
+				return;
+			}
 			var javaTextSync = this.fs.read(fullPath);
 			this.fs.write(path.join(process.cwd(), `../${fullPath}`), javaTextSync);
 			currentEntityReplacerGenerator.log(`${chalk.cyan("\nCopying entity ")} from jhipster-import-jdl to project root`);
