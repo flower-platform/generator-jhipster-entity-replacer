@@ -40,26 +40,12 @@ module.exports = JhipsterGenerator.extend({
             this.yourOptionKey = this.entityConfig.data.yourOptionKey;
             return;
         }
-		const done = this.async();
 		entityName = this.entityConfig.entityClass;
-		const prompts = [{
-		  type: 'confirm',
-		  name: 'enableReplacer',
-		  message: `Do you want to enable replacer for this entity(${entityName})?`,
-		  default: true
-		}];
-
-        this.prompt(prompts).then((props) => {
-		  this.props = props;
-		  // To access props later use this.props.someOption;
-		  this.enableReplacer = props.enableReplacer;
-		  done();
-        });
     },
 
     writing: {
         updateFiles() {
-			if (this.abort || !this.enableReplacer) {
+			if (this.abort) {
 				return;
 			}
 
@@ -74,7 +60,7 @@ module.exports = JhipsterGenerator.extend({
         },
 
         writeFiles() {
-			if (this.abort || !this.enableReplacer) {
+			if (this.abort) {
 				return;
 			}
 			var javaTextSync = this.fs.read(fullPath);
