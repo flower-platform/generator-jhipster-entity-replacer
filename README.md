@@ -43,7 +43,7 @@ cd <project folder (where .jdl file is)>
 yo jhipster-entity-replacer
 ```
 **Note:**
-```yo``` must come from Yarn (type ``which yo`` in order to find out)
+```yo``` must come from **Yarn**; type ``which yo``; if it is in *Yarn directory*, is ok, otherwise, if it is in *npm directory*, reinstall it with Yarn
 
 ## Running for new/updated entities as hook:
 ```bash
