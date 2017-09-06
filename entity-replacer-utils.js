@@ -31,8 +31,7 @@ function applyModificationsToFile(fullPath, generator) {
 		} while (m);
 }
 
-// array holding for each key a function
-registryOfStoredReplacement = [];
+
 var Replacer = {
   replaceRegex: function(expression1, expression2) {
 	currentEntityReplacerGenerator.log(`${chalk.green('Replacing first match')} for ${expression1} with ${expression2}`); 
@@ -44,19 +43,7 @@ var Replacer = {
 	var javaTextSync = currentEntityReplacerGenerator.fs.read(fullPath);	
 	currentEntityReplacerGenerator.fs.write(path.join(process.cwd(), fullPath), javaTextSync.replace(new RegExp(expression1, 'g'), expression2));
   },
-  storeReplacements: function (name, func) {
-	//currentEntityReplacerGenerator.log(`${chalk.green('Storing:')} ${name}`);
-	registryOfStoredReplacement[name] = func;
-  },
-  applyStoredReplacements: function (storedReplacement) {
-	var functionToBeEvaled = registryOfStoredReplacement[storedReplacement];
-	var that  = this;
-	var javaTextSync = currentEntityReplacerGenerator.fs.read(fullPath);
-	// insert `replacer = that` in the code that will be executed in order to have the correct reference for `replacer` param 
-	functionToBeEvaled = functionToBeEvaled.toString().replace(new RegExp('(function\\s*\\(replacer\\)\\s*\\{)'), '$1\nreplacer=that;');
-	currentEntityReplacerGenerator.log(`${chalk.green('Applying stored replacement:')} ${storedReplacement}`);
-	eval('(' + functionToBeEvaled + ')();');
-  },
+  
   insertElement: function (insertion) {
 	var javaTextSync = currentEntityReplacerGenerator.fs.read(fullPath);
 	currentEntityReplacerGenerator.log(`${chalk.green('Inserting before field')} ${currentFieldOrClass} ${insertion}`);
@@ -109,24 +96,25 @@ var Replacer = {
 var replacer = Object.create(Replacer);
 
 // predefined commands
-replacer.storeReplacements("insertAnnotGenEntityDtoAboveClass", function(replacer) {
-	replacer.insertElement("@GenEntityDto(superClass = TempAbstractDto.class)");
-	replacer.replaceRegex("(package\s*.*;)", "$1\nimport com.crispico.annotation.definition.GenEntityDto;");
-	replacer.replaceRegex("(package\s*.*;)", "$1\nimport com.crispico.absence_management.shared.dto.TempAbstractDto;");
-});
+replacer.insertAnnotGenEntityDtoAboveClass = function() {
+	this.insertElement("@GenEntityDto(superClass = TempAbstractDto.class)");
+	this.replaceRegex("(package\s*.*;)", "$1\nimport com.crispico.annotation.definition.GenEntityDto;");
+	this.replaceRegex("(package\s*.*;)", "$1\nimport com.crispico.absence_management.shared.dto.TempAbstractDto;");
+};
 
-replacer.storeReplacements("insertAnnotGenDtoCrudRepositoryAndServiceAboveClass", function(replacer) {
-	replacer.insertElement("@GenDtoCrudRepositoryAndService");
-	replacer.replaceRegex("(package\s*.*;)", "$1\nimport com.crispico.annotation.definition.GenDtoCrudRepositoryAndService;");
-});
+replacer.insertAnnotGenDtoCrudRepositoryAndServiceAboveClass = function() {
+	this.insertElement("@GenDtoCrudRepositoryAndService");
+	this.replaceRegex("(package\s*.*;)", "$1\nimport com.crispico.annotation.definition.GenDtoCrudRepositoryAndService;");
+};
 
-replacer.storeReplacements("addImportForGenEntityDtoField", function(replacer) {
-	replacer.replaceRegex("(package\s*.*;)", "$1\nimport com.crispico.annotation.definition.GenEntityDtoField;");
-});
+replacer.addImportForGenEntityDtoField = function() {
+	this.replaceRegex("(package\s*.*;)", "$1\nimport com.crispico.annotation.definition.GenEntityDtoField;");
+};
 
-replacer.storeReplacements("addImportForFieldInclusion", function(replacer) {
+replacer.addImportForFieldInclusion = function() {
 	replacer.replaceRegex("(package\s*.*;)", "$1\nimport com.crispico.annotation.definition.util.EntityConstants.FieldInclusion;");
-});
-replacer.storeReplacements("insertAnotGenEntityDtoFieldAboveField", function(replacer) {
+};
+
+replacer.insertAnotGenEntityDtoFieldAboveField = function() {
 	replacer.insertElement("@GenEntityDtoField(inclusion=FieldInclusion.EXCLUDE)");
-});
+};

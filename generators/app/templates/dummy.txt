@@ -1,2 +1,0 @@
-hello hook-test-demo!
-It's dummy.txt
