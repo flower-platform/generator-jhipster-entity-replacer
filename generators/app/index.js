@@ -86,7 +86,7 @@ module.exports = JhipsterGenerator.extend({
 		this.existingEntities.forEach((entityName) => {
 		  fullPath = `${javaDir}domain/${entityName}.java`;
 		  this.log(`${chalk.magenta("Processing")} ${fullPath}`);
-		  entityReplacerUtils.applyModificationsToFile(fullPath, this);
+		  entityReplacerUtils.applyModificationsToFile(entityName, fullPath, this);
 		});
         try {
 			this.log("I am registering as a post-entity-hook");

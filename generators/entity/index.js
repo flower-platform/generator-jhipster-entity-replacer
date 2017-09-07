@@ -22,6 +22,9 @@ module.exports = JhipsterGenerator.extend({
             if (!this.jhipsterAppConfig) {
                 this.error('Can\'t read .yo-rc.json');
             }
+		  entityName = this.entityConfig.entityClass;
+		  // this option forces overwriting of files without user being prompted
+		  this.conflicter.force = true
         },
         displayLogo() {
             this.log(chalk.white('Running ' + chalk.bold('JHipster entity-replacer') + ' Generator! ' + chalk.yellow('v' + packagejs.version + '\n')));
@@ -32,15 +35,6 @@ module.exports = JhipsterGenerator.extend({
                 this.env.error(chalk.red.bold('ERROR!') + ' This sub generator should be used only from JHipster and cannot be run directly...\n');
             }
         }
-    },
-
-  prompting() {
-        // don't prompt if data are imported from a file
-        if (this.entityConfig.useConfigurationFile == true && this.entityConfig.data && typeof this.entityConfig.data.yourOptionKey !== 'undefined') {
-            this.yourOptionKey = this.entityConfig.data.yourOptionKey;
-            return;
-        }
-		entityName = this.entityConfig.entityClass;
     },
 
     writing: {
@@ -55,7 +49,7 @@ module.exports = JhipsterGenerator.extend({
 			if (entityName) {
 				this.log(`\n${chalk.bold.green('I\'m updating the entity for audit ')}${chalk.bold.yellow(this.entityConfig.entityClass)}`);				
 				fullPath = `${javaDir}domain/${entityName}.java`;
-				entityReplacerUtils.applyModificationsToFile(fullPath, this);
+				entityReplacerUtils.applyModificationsToFile(entityName, fullPath, this);
 			}       
         },
 

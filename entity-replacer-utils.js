@@ -6,44 +6,59 @@ module.exports = {
     applyModificationsToFile
 };
 
-function applyModificationsToFile(fullPath, generator) {
-		// al variables declared without `var` need to be available outside this module
-		
-		currentEntityReplacerGenerator =  generator;
+function applyModificationsToFile(entityName, fullPath, generator) {
+		// !!!all variables declared without `var` need to be available outside this module
+		currentEntityReplacerGenerator = generator;
 		// @ApiModelProperty("This is a comment bla bla. <jhipster-entity-replacer> // aici avem cod js pe care... </jhipster-entity-replacer>")  becomes @ApiModelProperty("This is a comment bla bla.") 
 		var regexApiModelProp = '((?:@ApiModelProperty|@ApiModel)\\(.*?)<jhipster-entity-replacer>.*<\\/jhipster-entity-replacer>(.*?\\))';
-		generator.replaceContent(fullPath, regexApiModelProp, "$1$2", true);
-		
+		generator.replaceContent(fullPath, regexApiModelProp, "$1$2", true);		
 		var javaText = generator.fs.read(fullPath);
+		
+		eval(generator.fs.read('./entity-replacer-customizations.js'));
+		if (typeof replacer.entity === "function") {
+			replacer.entity();	
+		}
 		// match the whole text between <jhipster-entity-replacer> tags
-		var re = new RegExp('<jhipster-entity-replacer>([\\s\\S]*?)<\\/jhipster-entity-replacer>[\\s\\S]*?(?:(.*class[\\s\\S]*?\\{)|.*?(\\w+);)', 'g');
+		var re = new RegExp('(<jhipster-entity-replacer>([\\s\\S]*?)<\\/jhipster-entity-replacer>)[\\s\\S]*?(?:(.*class[\\s\\S]*?\\{)|.*?(\\w+);)', 'g');
 		// iterate through whole file and get the instructions string between <jhipster-entity-replacer> for each field 
 		do {
 		var m = re.exec(javaText);
 		if (m) {
-			currentFieldOrClass = m[2] ? m[2] : m[3];
-			var currentInstructionsString = m[1];
+			currentFieldOrClass = m[3] ? m[3] : m[4];
+			var currentInstructionsString = m[2];
+			// delete snippets like <jhipster-entity-replacer></jhipster-entity-replacer> from comments
+			generator.log(`${chalk.red("Deleting ")} ${m[1]}`)
+			generator.replaceContent(fullPath, m[1], "");
 			// evaluate whole current instruction string
 			var formattedComment = formatUtilsJH.formatComment(currentInstructionsString)
 			generator.log(`${chalk.cyan("Evaluation of ")} ${formattedComment.replace(/\\"/g, '"')}`)
 			eval(formattedComment.replace(/\\"/g, '"'));
 			}
 		} while (m);
+		// empty comments may reside after deleting snippets like <jhipster-entity-replacer></jhipster-entity-replacer>  
+		// from comments if those snippets were the only thing found in comments
+		generator.replaceContent(fullPath, "\\s*\\/\\*[\\*\\s]+\\*\\/", "\n", true);		
+		
 }
 
 
 var Replacer = {
-  replaceRegex: function(expression1, expression2) {
-	currentEntityReplacerGenerator.log(`${chalk.green('Replacing first match')} for ${expression1} with ${expression2}`); 
+  replaceRegex: function(replaceWhat, replaceWith) {
+	currentEntityReplacerGenerator.log(`${chalk.green('Replacing first match')} for ${replaceWhat} with ${replaceWith}`); 
 	var javaTextSync = currentEntityReplacerGenerator.fs.read(fullPath);
-	currentEntityReplacerGenerator.fs.write(path.join(process.cwd(), fullPath), javaTextSync.replace(new RegExp(expression1), expression2));
+	currentEntityReplacerGenerator.fs.write(path.join(process.cwd(), fullPath), javaTextSync.replace(new RegExp(replaceWhat), replaceWith));
   },
-  replaceRegexAll: function(expression1, expression2) {
-	currentEntityReplacerGenerator.log(`${chalk.green('Replacing ALL matches')} for ${expression1} with ${expression2}`);
+  replaceRegexAll: function(replaceWhat, replaceWith) {
+	currentEntityReplacerGenerator.log(`${chalk.green('Replacing ALL matches')} for ${replaceWhat} with ${replaceWith}`);
 	var javaTextSync = currentEntityReplacerGenerator.fs.read(fullPath);	
-	currentEntityReplacerGenerator.fs.write(path.join(process.cwd(), fullPath), javaTextSync.replace(new RegExp(expression1, 'g'), expression2));
+	currentEntityReplacerGenerator.fs.write(path.join(process.cwd(), fullPath), javaTextSync.replace(new RegExp(replaceWhat, 'g'), replaceWith));
   },
-  
+  insertElementAboveClass: function(insertion) {
+	var regex =  new RegExp("(\\s*public class " + entityName + "\\s*)");
+	var javaTextSync = currentEntityReplacerGenerator.fs.read(fullPath);
+	currentEntityReplacerGenerator.log(`${chalk.green('Inserting above class:Regex')} ${regex.toString()}`);	
+	currentEntityReplacerGenerator.fs.write(path.join(process.cwd(), fullPath), javaTextSync.replace(regex, "\n" + insertion + '$1'));
+  },
   insertElement: function (insertion) {
 	var javaTextSync = currentEntityReplacerGenerator.fs.read(fullPath);
 	currentEntityReplacerGenerator.log(`${chalk.green('Inserting before field')} ${currentFieldOrClass} ${insertion}`);
