@@ -1,6 +1,6 @@
 {
   "name": "generator-jhipster-entity-replacer",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Parses javascript code within &lt;jhipster-entity-replacer&gt; and executes it as is",
   "keywords": [
     "yeoman-generator",
@@ -27,8 +27,7 @@
     "ncp": "^2.0.0",
     "semver": "5.3.0",
     "shelljs": "0.5.3",
-    "yeoman-generator": "1.1.1",
-    "gulp": "^3.9.1"
+    "yeoman-generator": "1.1.1"
   },
   "devDependencies": {
     "eslint": "3.17.1",
