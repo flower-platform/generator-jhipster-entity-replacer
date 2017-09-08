@@ -9,25 +9,26 @@ module.exports = {
 function applyModificationsToFile(entityName, fullPath, generator) {
 		// !!!all variables declared without `var` need to be available outside this module
 		currentEntityReplacerGenerator = generator;
-		// @ApiModelProperty("This is a comment bla bla. <jhipster-entity-replacer> // aici avem cod js pe care... </jhipster-entity-replacer>")  becomes @ApiModelProperty("This is a comment bla bla.") 
-		var regexApiModelProp = '((?:@ApiModelProperty|@ApiModel)\\(.*?)<jhipster-entity-replacer>.*<\\/jhipster-entity-replacer>(.*?\\))';
+		// @ApiModelProperty("This is a comment bla bla. {{{// aici avem cod js pe care... }}}")  becomes @ApiModelProperty("This is a comment bla bla.") 
+		var regexApiModelProp = '((?:@ApiModelProperty|@ApiModel)\\(.*?)\\{\\{\\{.*\\}\\}\\}(.*?\\))';
 		generator.replaceContent(fullPath, regexApiModelProp, "$1$2", true);		
 		var javaText = generator.fs.read(fullPath);
 		
-		eval(generator.fs.read('./entity-replacer-customizations.js'));
-		if (typeof replacer.entity === "function") {
-			replacer.entity();	
+		eval(generator.fs.read('./jhipster-entity-replacer.js'));
+		if (typeof $r.entity === "function") {
+			generator.log(`${chalk.red("Executing global default function")} entity()`);
+			$r.entity();	
 		}
-		// match the whole text between <jhipster-entity-replacer> tags
-		var re = new RegExp('(<jhipster-entity-replacer>([\\s\\S]*?)<\\/jhipster-entity-replacer>)[\\s\\S]*?(?:(.*class[\\s\\S]*?\\{)|.*?(\\w+);)', 'g');
-		// iterate through whole file and get the instructions string between <jhipster-entity-replacer> for each field 
+		// match the whole text between {{{...}}} tags
+		var re = new RegExp('(\\{\\{\\{([\\s\\S]*?)\\}\\}\\})[\\s\\S]*?(?:(.*class[\\s\\S]*?\\{)|.*?(\\w+);)', 'g');
+		// iterate through whole file and get the instructions string between {{{...}}} for each field 
 		do {
 		var m = re.exec(javaText);
 		if (m) {
 			currentFieldOrClass = m[3] ? m[3] : m[4];
+			generator.log(`${chalk.red("Executing from field/class: ")} ${currentFieldOrClass}`)
 			var currentInstructionsString = m[2];
-			// delete snippets like <jhipster-entity-replacer></jhipster-entity-replacer> from comments
-			generator.log(`${chalk.red("Deleting ")} ${m[1]}`)
+			// delete snippets like {{{ ...}}} from comments
 			generator.replaceContent(fullPath, m[1], "");
 			// evaluate whole current instruction string
 			var formattedComment = formatUtilsJH.formatComment(currentInstructionsString)
@@ -35,7 +36,7 @@ function applyModificationsToFile(entityName, fullPath, generator) {
 			eval(formattedComment.replace(/\\"/g, '"'));
 			}
 		} while (m);
-		// empty comments may reside after deleting snippets like <jhipster-entity-replacer></jhipster-entity-replacer>  
+		// empty comments may reside after deleting snippets like {{{...}}}
 		// from comments if those snippets were the only thing found in comments
 		generator.replaceContent(fullPath, "\\s*\\/\\*[\\*\\s]+\\*\\/", "\n", true);		
 		
@@ -56,7 +57,7 @@ var Replacer = {
   insertElementAboveClass: function(insertion) {
 	var regex =  new RegExp("(\\s*public class " + entityName + "\\s*)");
 	var javaTextSync = currentEntityReplacerGenerator.fs.read(fullPath);
-	currentEntityReplacerGenerator.log(`${chalk.green('Inserting above class:Regex')} ${regex.toString()}`);	
+	currentEntityReplacerGenerator.log(`${chalk.green('Regex searched when inserting above class')} ${regex.toString()}`);	
 	currentEntityReplacerGenerator.fs.write(path.join(process.cwd(), fullPath), javaTextSync.replace(regex, "\n" + insertion + '$1'));
   },
   insertElement: function (insertion) {
@@ -65,7 +66,7 @@ var Replacer = {
 	var isClass = currentFieldOrClass.includes("class");
 	var regex =  isClass ? new RegExp("(\s*" + currentFieldOrClass + "\\s*)") : new RegExp("(.*" + currentFieldOrClass + "\\s*;)");
 	var charBeforeInsertion = isClass ? '' : '\t';
-	currentEntityReplacerGenerator.log(`${chalk.green('Inserting:Regex')} ${regex.toString()}`);	
+	currentEntityReplacerGenerator.log(`${chalk.green('Regex searched when inserting before field')} ${regex.toString()}`);	
 	currentEntityReplacerGenerator.fs.write(path.join(process.cwd(), fullPath), javaTextSync.replace(regex, charBeforeInsertion + insertion + '\n$1'));
   },
   replaceRegexWithCurlyBraceBlock: function (regexString) {
@@ -108,28 +109,28 @@ var Replacer = {
   }
 };
 
-var replacer = Object.create(Replacer);
+var $r = Object.create(Replacer);
 
 // predefined commands
-replacer.insertAnnotGenEntityDtoAboveClass = function() {
+$r.insertAnnotGenEntityDtoAboveClass = function() {
 	this.insertElement("@GenEntityDto(superClass = TempAbstractDto.class)");
-	this.replaceRegex("(package\s*.*;)", "$1\nimport com.crispico.annotation.definition.GenEntityDto;");
-	this.replaceRegex("(package\s*.*;)", "$1\nimport com.crispico.absence_management.shared.dto.TempAbstractDto;");
+	this.regex("(package\s*.*;)", "$1\nimport com.crispico.annotation.definition.GenEntityDto;");
+	this.regex("(package\s*.*;)", "$1\nimport com.crispico.absence_management.shared.dto.TempAbstractDto;");
 };
 
-replacer.insertAnnotGenDtoCrudRepositoryAndServiceAboveClass = function() {
+$r.insertAnnotGenDtoCrudRepositoryAndServiceAboveClass = function() {
 	this.insertElement("@GenDtoCrudRepositoryAndService");
-	this.replaceRegex("(package\s*.*;)", "$1\nimport com.crispico.annotation.definition.GenDtoCrudRepositoryAndService;");
+	this.regex("(package\s*.*;)", "$1\nimport com.crispico.annotation.definition.GenDtoCrudRepositoryAndService;");
 };
 
-replacer.addImportForGenEntityDtoField = function() {
-	this.replaceRegex("(package\s*.*;)", "$1\nimport com.crispico.annotation.definition.GenEntityDtoField;");
+$r.addImportForGenEntityDtoField = function() {
+	this.regex("(package\s*.*;)", "$1\nimport com.crispico.annotation.definition.GenEntityDtoField;");
 };
 
-replacer.addImportForFieldInclusion = function() {
-	replacer.replaceRegex("(package\s*.*;)", "$1\nimport com.crispico.annotation.definition.util.EntityConstants.FieldInclusion;");
+$r.addImportForFieldInclusion = function() {
+	$r.regex("(package\s*.*;)", "$1\nimport com.crispico.annotation.definition.util.EntityConstants.FieldInclusion;");
 };
 
-replacer.insertAnotGenEntityDtoFieldAboveField = function() {
-	replacer.insertElement("@GenEntityDtoField(inclusion=FieldInclusion.EXCLUDE)");
+$r.insertAnotGenEntityDtoFieldAboveField = function() {
+	$r.insertElement("@GenEntityDtoField(inclusion=FieldInclusion.EXCLUDE)");
 };
