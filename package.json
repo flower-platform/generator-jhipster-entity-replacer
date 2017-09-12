@@ -1,6 +1,6 @@
 {
   "name": "generator-jhipster-entity-replacer",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Parses javascript code within &lt;jhipster-entity-replacer&gt; and executes it as is",
   "keywords": [
     "yeoman-generator",
