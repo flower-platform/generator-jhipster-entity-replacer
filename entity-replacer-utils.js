@@ -14,7 +14,7 @@ function applyModificationsToFile(entityName, fullPath, generator) {
 		generator.replaceContent(fullPath, regexApiModelProp, "$1$2", true);		
 		var javaText = generator.fs.read(fullPath);
 		
-		eval(generator.fs.read('./jhipster-entity-replacer.js'));
+		eval(generator.fs.read('./jhipster-entity-replacer.js', { defaults = "" }));
 		if (typeof $r.entity === "function") {
 			generator.log(`${chalk.red("Executing global default function")} entity()`);
 			$r.entity();	
