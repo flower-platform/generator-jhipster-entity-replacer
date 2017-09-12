@@ -101,36 +101,13 @@ var Replacer = {
 			currentEntityReplacerGenerator.fs.write(path.join(process.cwd(), fullPath), javaTextSync.replace(javaTextSync.substring(positionOfMatch, startIndex + 1), ""));	
 		}
 	}
-  },
-  insertBeforeElement: function (elementName, insertion) {
-	currentEntityReplacerGenerator.log(`${chalk.green('Inserting before element ')} ${elementName} ${insertion}`);	
-	var javaTextSync = currentEntityReplacerGenerator.fs.read(fullPath);
-	currentEntityReplacerGenerator.fs.write(path.join(process.cwd(), fullPath), javaTextSync.replace(new RegExp("(.*private.*" + elementName + ".*;)"), '\t' + insertion + '\n$1'));
   }
 };
 
 var $r = Object.create(Replacer);
 
-// predefined commands
-$r.insertAnnotGenEntityDtoAboveClass = function() {
-	this.insertElement("@GenEntityDto(superClass = TempAbstractDto.class)");
-	this.regex("(package\s*.*;)", "$1\nimport com.crispico.annotation.definition.GenEntityDto;");
-	this.regex("(package\s*.*;)", "$1\nimport com.crispico.absence_management.shared.dto.TempAbstractDto;");
-};
+// additional code can be written in "jhipster-entity-replacer.js" of the current execution dir,
+// (e.g. "<project>j/hipster-import-jdl/jhipster-entity-replacer.js"). Use jhipster-entity-replacer.js to
+// fine tune the desired additional functions. And if the new functions are of general interest for other
+// projects (which is almost always the case) => migrate them here.
 
-$r.insertAnnotGenDtoCrudRepositoryAndServiceAboveClass = function() {
-	this.insertElement("@GenDtoCrudRepositoryAndService");
-	this.regex("(package\s*.*;)", "$1\nimport com.crispico.annotation.definition.GenDtoCrudRepositoryAndService;");
-};
-
-$r.addImportForGenEntityDtoField = function() {
-	this.regex("(package\s*.*;)", "$1\nimport com.crispico.annotation.definition.GenEntityDtoField;");
-};
-
-$r.addImportForFieldInclusion = function() {
-	$r.regex("(package\s*.*;)", "$1\nimport com.crispico.annotation.definition.util.EntityConstants.FieldInclusion;");
-};
-
-$r.insertAnotGenEntityDtoFieldAboveField = function() {
-	$r.insertElement("@GenEntityDtoField(inclusion=FieldInclusion.EXCLUDE)");
-};
