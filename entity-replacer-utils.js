@@ -107,7 +107,7 @@ var Replacer = {
 var $r = Object.create(Replacer);
 
 // additional code can be written in "jhipster-entity-replacer.js" of the current execution dir,
-// (e.g. "<project>j/hipster-import-jdl/jhipster-entity-replacer.js"). Use jhipster-entity-replacer.js to
+// (e.g. "<project>jhipster-import-jdl/jhipster-entity-replacer.js"). Use jhipster-entity-replacer.js to
 // fine tune the desired additional functions. And if the new functions are of general interest for other
 // projects (which is almost always the case) => migrate them here.
 
