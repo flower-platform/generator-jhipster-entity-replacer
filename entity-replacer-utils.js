@@ -14,7 +14,7 @@ function applyModificationsToFile(entityName, fullPath, generator) {
 		generator.replaceContent(fullPath, regexApiModelProp, "$1$2", true);		
 		var javaText = generator.fs.read(fullPath);
 		
-		eval(generator.fs.read('./jhipster-entity-replacer.js', { defaults = "" }));
+		eval(generator.fs.read('./jhipster-entity-replacer.js', { defaults: "" }));
 		if (typeof $r.entity === "function") {
 			generator.log(`${chalk.red("Executing global default function")} entity()`);
 			$r.entity();	
@@ -42,7 +42,6 @@ function applyModificationsToFile(entityName, fullPath, generator) {
 		
 }
 
-
 var Replacer = {
   replaceRegex: function(replaceWhat, replaceWith) {
 	currentEntityReplacerGenerator.log(`${chalk.green('Replacing first match')} for ${replaceWhat} with ${replaceWith}`); 
@@ -55,7 +54,7 @@ var Replacer = {
 	currentEntityReplacerGenerator.fs.write(path.join(process.cwd(), fullPath), javaTextSync.replace(new RegExp(replaceWhat, 'g'), replaceWith));
   },
   insertElementAboveClass: function(insertion) {
-	var regex =  new RegExp("(\\s*public class " + entityName + "\\s*)");
+	var regex =  new RegExp("(\\s*public class )");
 	var javaTextSync = currentEntityReplacerGenerator.fs.read(fullPath);
 	currentEntityReplacerGenerator.log(`${chalk.green('Regex searched when inserting above class')} ${regex.toString()}`);	
 	currentEntityReplacerGenerator.fs.write(path.join(process.cwd(), fullPath), javaTextSync.replace(regex, "\n" + insertion + '$1'));
@@ -160,4 +159,3 @@ $r.entity = function() {
 // (e.g. "<project>jhipster-import-jdl/jhipster-entity-replacer.js"). Use jhipster-entity-replacer.js to
 // fine tune the desired additional functions. And if the new functions are of general interest for other
 // projects (which is almost always the case) => migrate them here.
-
