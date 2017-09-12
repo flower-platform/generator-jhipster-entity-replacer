@@ -106,6 +106,56 @@ var Replacer = {
 
 var $r = Object.create(Replacer);
 
+$r.insertImport = function(importedPackage) {
+	$r.replaceRegex("(package\s*.*;)", "$1\nimport " + importedPackage + ";");
+}
+
+// reused in several regexes
+var REGEX_ANNOTATIONS_MODIFIERS = "(\n?(?:.*@.*\\n)*.*)((?:private|protected|public).*?)";
+
+$r.insertElementAboveMember = function(memberName, insertion) {
+	$r.replaceRegex(REGEX_ANNOTATIONS_MODIFIERS + "(" + memberName + ")", "$1" + insertion + "\n\t$2$3");
+}
+
+$r.removeField = function(fieldName) {
+	$r.replaceRegex(REGEX_ANNOTATIONS_MODIFIERS + fieldName + ";\\s*(\\S)", "\t$3");
+}
+  
+$r.removeMethod = function(methodName) {
+	$r.replaceRegexWithCurlyBraceBlock(REGEX_ANNOTATIONS_MODIFIERS + methodName);
+}
+  
+$r.setSuperClass = function(superClass) {
+	$r.replaceRegex("(public class\\s*\\w+\\s*)(?:extends\\s*\\w+\\s*)?", "$1extends " + superClass + " ");	
+}
+
+$r.excludeDtoField = function() {
+	$r.insertElement("@GenEntityDtoField(inclusion=FieldInclusion.EXCLUDE)");	
+}
+
+// default function, invoked for each entity
+$r.entity = function() {
+	$r.insertImport("com.crispico.annotation.definition.GenEntityDto");
+	$r.insertImport("com.crispico.annotation.definition.GenEntityDtoField");
+	$r.insertImport("com.crispico.foundation.shared.dto_crud.AbstractEntityDto");
+	$r.insertImport("com.crispico.foundation.server.domain.AbstractEntity");
+	$r.insertImport("com.crispico.foundation.server.domain.AbstractNamedEntity");
+	$r.insertImport("com.crispico.annotation.definition.GenDtoCrudRepositoryAndService");
+	$r.insertImport("com.crispico.annotation.definition.util.EntityConstants.FieldInclusion");
+	 
+	$r.insertElementAboveClass("@GenEntityDto(superClass = AbstractEntityDto.class)");
+	$r.insertElementAboveClass("@GenDtoCrudRepositoryAndService");
+	  
+	$r.setSuperClass("AbstractEntity");
+	   
+	$r.removeField("id");
+	$r.removeMethod("getId");
+	$r.removeMethod("setId");
+	$r.removeMethod("equals");
+	$r.removeMethod("hashCode");
+	$r.removeMethod("toString"); 
+}
+
 // additional code can be written in "jhipster-entity-replacer.js" of the current execution dir,
 // (e.g. "<project>jhipster-import-jdl/jhipster-entity-replacer.js"). Use jhipster-entity-replacer.js to
 // fine tune the desired additional functions. And if the new functions are of general interest for other
