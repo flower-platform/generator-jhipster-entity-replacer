@@ -2,29 +2,25 @@
 [![NPM version][npm-image]][npm-url] [![Build Status][travis-image]][travis-url] [![Dependency Status][daviddm-image]][daviddm-url]
 > JHipster module, Parses javascript code within &lt;jhipster-entity-replacer&gt; and executes it as is
 
-# Introduction
+# Install
 
-This is a [JHipster](http://jhipster.github.io/) module, that is meant to be used in a JHipster application.
-
-# Prerequisites
-
-As this is a [JHipster](http://jhipster.github.io/) module, we expect you have JHipster and its related tools already installed:
-
-- [Installing JHipster](https://jhipster.github.io/installation.html) - the Yarn way.
+## Preparation/cleaning up
 
 **Note:**
-JHipster can be installed via Yarn or NPM. From what we have seen there are big subtle issues if both install methods are used. 
+JHipster and Yeoman can be installed via Yarn or NPM. From what we have seen there are big subtle issues if both install methods are used. 
 
-* Did you work with JHipster via NPM in the past? You can verify by looking in ``c:\Users\<USER>\AppData\Roaming\npm\node_modules\`` for something named ``*jhipster*``.
+* Did you work with JHipster and/or Yeoman via NPM in the past? You can verify by looking in ``c:\Users\<USER>\AppData\Roaming\npm\node_modules\`` for something named ``*jhipster*`` or ``*yo*``.
 * If YES, then the safest thing to do is to delete the NPM repo: 
   * ``c:\Users\<USER>\AppData\Roaming\npm\``
   * ``c:\Users\<USER>\AppData\Roaming\npm-cache\``
   
-Same thing for ``yo``: ```yo``` must come from **Yarn**; type ``which yo``; if it is in *Yarn directory*, is ok, otherwise, if it is in *npm directory*, reinstall it with Yarn
+By doing this, other existing node packages are gone as well. But that's no problem; when you'll need them, you can reinstall them using npm. 
 
-# Installation
+## Install JHipster
 
-To install this module:
+[Install JHipster](https://jhipster.github.io/installation.html), the Yarn way. I.e. node, yarn, yo, jhipster.
+
+## Install this module:
 
 ```bash
 yarn global add https://github.com/flower-platform/generator-jhipster-entity-replacer
