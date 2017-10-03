@@ -20,13 +20,21 @@ By doing this, other existing node packages are gone as well. But that's no prob
 
 [Install JHipster](https://jhipster.github.io/installation.html), the Yarn way. I.e. node, yarn, yo, jhipster.
 
-## Install this module:
+## Install Gulp (globally)
+
+`yarn global add gulp`
+
+We don't actually use it. But without it, we get an ugly error each time we run this tool.
+
+## Install this module
 
 ```bash
 yarn global add https://github.com/flower-platform/generator-jhipster-entity-replacer
 ```
 **Note:**
 When installing the generator as global, the directory where it will be found is ``c:\Users\<USER>\AppData\Local\Yarn\config\global\node_modules``
+
+And that's it! For apps based on Foundation Platform, there are preconfigured launch configs, so normally you don't need to do the steps below (i.e. "Usage" section). 
 
 # Update
 
