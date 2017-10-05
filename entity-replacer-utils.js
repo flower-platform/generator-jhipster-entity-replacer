@@ -68,7 +68,7 @@ var Replacer = {
 	var javaTextSync = currentEntityReplacerGenerator.fs.read(fullPathWriteTo);	
 	currentEntityReplacerGenerator.fs.write(path.join(process.cwd(), fullPathWriteTo), javaTextSync.replace(new RegExp(replaceWhat, 'g'), replaceWith));
   },
-  insertElementAboveClass: function(insertion) {
+  insertAboveClass: function(insertion) {
 	var regex =  new RegExp("(\\s*public class )");
 	var javaTextSync = currentEntityReplacerGenerator.fs.read(fullPathWriteTo);
 	currentEntityReplacerGenerator.log(`${chalk.green('Regex searched when inserting above class')} ${regex.toString()}`);	
@@ -118,14 +118,15 @@ var Replacer = {
   }
 };
 
+// reused in several regexes
+const REGEX_ANNOTATIONS_MODIFIERS = "(\n?(?:.*@.*\\n)*.*)((?:private|protected|public).*?)";
+
+
 var $r = Object.create(Replacer);
 
 $r.insertImport = function(importedPackage) {
 	$r.replaceRegex("(package\s*.*;)", "$1\nimport " + importedPackage + ";");
 }
-
-// reused in several regexes
-var REGEX_ANNOTATIONS_MODIFIERS = "(\\n?(?:.*@.*\\n)*.*)((?:private|protected|public).*?)";
 
 $r.insertElementAboveMember = function(memberName, insertion) {
 	$r.replaceRegex(REGEX_ANNOTATIONS_MODIFIERS + "(" + memberName + ")", "$1" + insertion + "\n\t$2$3");
@@ -139,8 +140,19 @@ $r.removeMethod = function(methodName) {
 	$r.replaceRegexWithCurlyBraceBlock(REGEX_ANNOTATIONS_MODIFIERS + methodName + "\\s*\\(");
 }
   
-$r.setSuperClass = function(superClass) {
-	$r.replaceRegex("(public class\\s*\\w+\\s*)(?:extends\\s*\\w+\\s*)?", "$1extends " + superClass + " ");	
+$r.superClass = function(superClass, updateClass = true, updateDto = true) {
+	if (updateClass) {
+		$r.replaceRegex("(public class\\s*\\w+\\s*)(?:extends\\s*\\S+\\s*)?", "$1extends " + superClass + " ");	
+	}
+	if (updateDto) {
+		var dto;
+		if (typeof updateDto === 'string') {
+			dto = updateDto;
+		} else {
+			dto = superClass + "Dto";
+		}
+		$r.replaceRegex("(@GenEntityDto\\(superClass =) .*?(\\.class)", "$1 " + dto + "$2");
+	}
 }
 
 $r.excludeDtoField = function() {
@@ -155,12 +167,13 @@ $r.entity = function() {
 	$r.insertImport("com.crispico.foundation.server.domain.AbstractEntity");
 	$r.insertImport("com.crispico.foundation.server.domain.AbstractNamedEntity");
 	$r.insertImport("com.crispico.annotation.definition.GenDtoCrudRepositoryAndService");
-	$r.insertImport("com.crispico.annotation.definition.util.EntityConstants.FieldInclusion");
+	$r.insertImport("com.crispico.annotation.definition.util.EntityConstants.*");
+	$r.insertImport("com.crispico.annotation.definition.dto_crud.DtoDescriptorCustomization");
 	 
-	$r.insertElementAboveClass("@GenEntityDto(superClass = AbstractEntityDto.class)");
-	$r.insertElementAboveClass("@GenDtoCrudRepositoryAndService");
+	$r.insertAboveClass("@GenEntityDto(superClass = AbstractEntityDto.class)");
+	$r.insertAboveClass("@GenDtoCrudRepositoryAndService");
 	  
-	$r.setSuperClass("AbstractEntity");
+	$r.superClass("AbstractEntity");
 	   
 	$r.removeField("id");
 	$r.removeMethod("getId");
