@@ -48,10 +48,11 @@ module.exports = JhipsterGenerator.extend({
 
 			if (entityName) {
 				this.log(`\n${chalk.bold.green('I\'m updating the entity for audit ')}${chalk.bold.yellow(this.entityConfig.entityClass)}`);				
-				fullPath = `${javaDir}domain/${entityName}.java`;
-				entityReplacerUtils.applyModificationsToFile(entityName, fullPath, this);
+				fullPathReadFrom = `${javaDir}domain/${entityName}.java`;
+				fullPathWriteTo = `../${javaDir}domain/${entityName}.java`;
+				entityReplacerUtils.applyModificationsToFile(entityName, fullPathReadFrom, fullPathWriteTo, this);
 			}       
-        },
+        }/*,
 
         writeFiles() {
 			if (this.abort) {
@@ -60,7 +61,7 @@ module.exports = JhipsterGenerator.extend({
 			var javaTextSync = this.fs.read(fullPath);
 			this.fs.write(path.join(process.cwd(), `../${fullPath}`), javaTextSync);
 			currentEntityReplacerGenerator.log(`${chalk.cyan("\nCopying entity ")} from jhipster-import-jdl to project root`);
-		}
+		}*/
     }	
 });
 

@@ -6,19 +6,32 @@ module.exports = {
     applyModificationsToFile
 };
 
-function applyModificationsToFile(entityName, fullPath, generator) {
+function applyModificationsToFile(entityName, fullPathReadFrom, fullPathWriteTo, generator) {
 		// !!!all variables declared without `var` need to be available outside this module
 		currentEntityReplacerGenerator = generator;
-		// @ApiModelProperty("This is a comment bla bla. {{{// aici avem cod js pe care... }}}")  becomes @ApiModelProperty("This is a comment bla bla.") 
-		var regexApiModelProp = '((?:@ApiModelProperty|@ApiModel)\\(.*?)\\{\\{\\{.*\\}\\}\\}(.*?\\))';
-		generator.replaceContent(fullPath, regexApiModelProp, "$1$2", true);		
-		var javaText = generator.fs.read(fullPath);
+		var javaText = generator.fs.read(fullPathReadFrom);
 		
-		eval(generator.fs.read('./jhipster-entity-replacer.js', { defaults: "" }));
-		if (typeof $r.entity === "function") {
+		// transfer java source code to the root of the project
+		currentEntityReplacerGenerator.fs.write(path.join(process.cwd(), fullPathWriteTo), javaText);
+		
+		// @ApiModelProperty("This is a comment bla bla. {{{// aici avem cod js pe care... }}}")  becomes @ApiModelProperty("This is a comment bla bla.") 		
+		var regexApiModelProp = '((?:@ApiModelProperty|@ApiModel)\\(.*?)\\{\\{\\{.*\\}\\}\\}(.*?\\))';
+		generator.replaceContent(fullPathWriteTo, regexApiModelProp, "$1$2", true);
+		
+		// HACK: make sure we eval only once the content from jhipster-entity-replacer.js
+		// by checking if test function was declared; if it was not, we declare it
+		// and so, we never enter again on this branch
+		if (!$r.test) {
+			generator.log(`${chalk.red("I am executing once")} entity()`);
+			eval(generator.fs.read('./jhipster-entity-replacer.js', { defaults: "" }));
+			$r.test = function () {};
+		}		
+		if (typeof $r.entity === "function") {		
 			generator.log(`${chalk.red("Executing global default function")} entity()`);
 			$r.entity();	
 		}
+		
+		javaText = generator.fs.read(fullPathWriteTo);
 		// match the whole text between {{{...}}} tags
 		var re = new RegExp('(\\{\\{\\{([\\s\\S]*?)\\}\\}\\})[\\s\\S]*?(?:(.*class[\\s\\S]*?\\{)|.*?(\\w+);)', 'g');
 		// iterate through whole file and get the instructions string between {{{...}}} for each field 
@@ -29,48 +42,50 @@ function applyModificationsToFile(entityName, fullPath, generator) {
 			generator.log(`${chalk.red("Executing from field/class: ")} ${currentFieldOrClass}`)
 			var currentInstructionsString = m[2];
 			// delete snippets like {{{ ...}}} from comments
-			generator.replaceContent(fullPath, m[1], "");
+			generator.replaceContent(fullPathWriteTo, m[1], "");
 			// evaluate whole current instruction string
-			var formattedComment = formatUtilsJH.formatComment(currentInstructionsString)
-			generator.log(`${chalk.cyan("Evaluation of ")} ${formattedComment.replace(/\\"/g, '"')}`)
-			eval(formattedComment.replace(/\\"/g, '"'));
+			if (currentInstructionsString != undefined && currentInstructionsString.length != 0){
+				var formattedComment = formatUtilsJH.formatComment(currentInstructionsString)
+				generator.log(`${chalk.cyan("Evaluation of ")} ${formattedComment.replace(/\\"/g, '"')}`)
+				eval(formattedComment.replace(/\\"/g, '"'));
+			}
 			}
 		} while (m);
 		// empty comments may reside after deleting snippets like {{{...}}}
 		// from comments if those snippets were the only thing found in comments
-		generator.replaceContent(fullPath, "\\s*\\/\\*[\\*\\s]+\\*\\/", "\n", true);		
+		generator.replaceContent(fullPathWriteTo, "\\s*\\/\\*[\\*\\s]+\\*\\/", "\n", true);		
 		
 }
 
 var Replacer = {
   replaceRegex: function(replaceWhat, replaceWith) {
 	currentEntityReplacerGenerator.log(`${chalk.green('Replacing first match')} for ${replaceWhat} with ${replaceWith}`); 
-	var javaTextSync = currentEntityReplacerGenerator.fs.read(fullPath);
-	currentEntityReplacerGenerator.fs.write(path.join(process.cwd(), fullPath), javaTextSync.replace(new RegExp(replaceWhat), replaceWith));
+	var javaTextSync = currentEntityReplacerGenerator.fs.read(fullPathWriteTo);
+	currentEntityReplacerGenerator.fs.write(path.join(process.cwd(), fullPathWriteTo), javaTextSync.replace(new RegExp(replaceWhat), replaceWith));
   },
   replaceRegexAll: function(replaceWhat, replaceWith) {
 	currentEntityReplacerGenerator.log(`${chalk.green('Replacing ALL matches')} for ${replaceWhat} with ${replaceWith}`);
-	var javaTextSync = currentEntityReplacerGenerator.fs.read(fullPath);	
-	currentEntityReplacerGenerator.fs.write(path.join(process.cwd(), fullPath), javaTextSync.replace(new RegExp(replaceWhat, 'g'), replaceWith));
+	var javaTextSync = currentEntityReplacerGenerator.fs.read(fullPathWriteTo);	
+	currentEntityReplacerGenerator.fs.write(path.join(process.cwd(), fullPathWriteTo), javaTextSync.replace(new RegExp(replaceWhat, 'g'), replaceWith));
   },
   insertElementAboveClass: function(insertion) {
 	var regex =  new RegExp("(\\s*public class )");
-	var javaTextSync = currentEntityReplacerGenerator.fs.read(fullPath);
+	var javaTextSync = currentEntityReplacerGenerator.fs.read(fullPathWriteTo);
 	currentEntityReplacerGenerator.log(`${chalk.green('Regex searched when inserting above class')} ${regex.toString()}`);	
-	currentEntityReplacerGenerator.fs.write(path.join(process.cwd(), fullPath), javaTextSync.replace(regex, "\n" + insertion + '$1'));
+	currentEntityReplacerGenerator.fs.write(path.join(process.cwd(), fullPathWriteTo), javaTextSync.replace(regex, "\n" + insertion + '$1'));
   },
   insertElement: function (insertion) {
-	var javaTextSync = currentEntityReplacerGenerator.fs.read(fullPath);
+	var javaTextSync = currentEntityReplacerGenerator.fs.read(fullPathWriteTo);
 	currentEntityReplacerGenerator.log(`${chalk.green('Inserting before field')} ${currentFieldOrClass} ${insertion}`);
 	var isClass = currentFieldOrClass.includes("class");
 	var regex =  isClass ? new RegExp("(\s*" + currentFieldOrClass + "\\s*)") : new RegExp("(.*" + currentFieldOrClass + "\\s*;)");
 	var charBeforeInsertion = isClass ? '' : '\t';
 	currentEntityReplacerGenerator.log(`${chalk.green('Regex searched when inserting before field')} ${regex.toString()}`);	
-	currentEntityReplacerGenerator.fs.write(path.join(process.cwd(), fullPath), javaTextSync.replace(regex, charBeforeInsertion + insertion + '\n$1'));
+	currentEntityReplacerGenerator.fs.write(path.join(process.cwd(), fullPathWriteTo), javaTextSync.replace(regex, charBeforeInsertion + insertion + '\n$1'));
   },
   replaceRegexWithCurlyBraceBlock: function (regexString) {
 	currentEntityReplacerGenerator.log(`${chalk.green('Deleting method that matches regex ')} ${regexString}`);
-	var javaTextSync = currentEntityReplacerGenerator.fs.read(fullPath);
+	var javaTextSync = currentEntityReplacerGenerator.fs.read(fullPathWriteTo);
 	var curlyBracesStack = [];
 	// where method starts
 	var positionOfMatch = javaTextSync.search(new RegExp(regexString));
@@ -97,7 +112,7 @@ var Replacer = {
 				}
 			}
 			currentEntityReplacerGenerator.log(`${chalk.green('Matched full method body from ')} ${positionOfMatch} to ${startIndex}`); 
-			currentEntityReplacerGenerator.fs.write(path.join(process.cwd(), fullPath), javaTextSync.replace(javaTextSync.substring(positionOfMatch, startIndex + 1), ""));	
+			currentEntityReplacerGenerator.fs.write(path.join(process.cwd(), fullPathWriteTo), javaTextSync.replace(javaTextSync.substring(positionOfMatch, startIndex + 1), ""));	
 		}
 	}
   }
@@ -110,7 +125,7 @@ $r.insertImport = function(importedPackage) {
 }
 
 // reused in several regexes
-var REGEX_ANNOTATIONS_MODIFIERS = "(\n?(?:.*@.*\\n)*.*)((?:private|protected|public).*?)";
+var REGEX_ANNOTATIONS_MODIFIERS = "(\\n?(?:.*@.*\\n)*.*)((?:private|protected|public).*?)";
 
 $r.insertElementAboveMember = function(memberName, insertion) {
 	$r.replaceRegex(REGEX_ANNOTATIONS_MODIFIERS + "(" + memberName + ")", "$1" + insertion + "\n\t$2$3");
@@ -121,7 +136,7 @@ $r.removeField = function(fieldName) {
 }
   
 $r.removeMethod = function(methodName) {
-	$r.replaceRegexWithCurlyBraceBlock(REGEX_ANNOTATIONS_MODIFIERS + methodName);
+	$r.replaceRegexWithCurlyBraceBlock(REGEX_ANNOTATIONS_MODIFIERS + methodName + "\\s*\\(");
 }
   
 $r.setSuperClass = function(superClass) {

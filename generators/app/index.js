@@ -83,10 +83,13 @@ module.exports = JhipsterGenerator.extend({
 		
 		currentEntityReplacerGenerator = this;
 		this.log('\n---Updating entities files ---');
+		var isFirstIteration = true;
 		this.existingEntities.forEach((entityName) => {
-		  fullPath = `${javaDir}domain/${entityName}.java`;
-		  this.log(`${chalk.magenta("Processing")} ${fullPath}`);
-		  entityReplacerUtils.applyModificationsToFile(entityName, fullPath, this);
+		  fullPathReadFrom = `${javaDir}domain/${entityName}.java`;
+		  this.log(`${chalk.magenta("Processing")} ${fullPathReadFrom}`);
+		  fullPathWriteTo = `../${javaDir}domain/${entityName}.java`
+		  entityReplacerUtils.applyModificationsToFile(entityName, fullPathReadFrom, fullPathWriteTo, this);
+		  isFirstIteration = false;
 		});
         try {
 			this.log("I am registering as a post-entity-hook");
@@ -94,7 +97,7 @@ module.exports = JhipsterGenerator.extend({
         } catch (err) {
             this.log(`${chalk.red.bold('WARN!')} Could not register as a jhipster entity post creation hook...\n`);
         }
-    },
+    }/*,
 
     end() {
 		ncp(`${javaDir}domain/`, `../${javaDir}domain/`, {"clobber": true}, function (err) {
@@ -103,7 +106,7 @@ module.exports = JhipsterGenerator.extend({
 			}
 			currentEntityReplacerGenerator.log(`${chalk.cyan("\nCopying `domain` entities directory ")} from jhipster-import-jdl to project root`);
 		});
-    }
+    }*/
 });
 
 
