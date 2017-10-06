@@ -128,7 +128,7 @@ $r.insertImport = function(importedPackage) {
 	$r.replaceRegex("(package\s*.*;)", "$1\nimport " + importedPackage + ";");
 }
 
-$r.insertElementAboveMember = function(memberName, insertion) {
+$r.insertAboveMember = function(memberName, insertion) {
 	$r.replaceRegex(REGEX_ANNOTATIONS_MODIFIERS + "(" + memberName + ")", "$1" + insertion + "\n\t$2$3");
 }
 
