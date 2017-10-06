@@ -175,9 +175,10 @@ $r.entity = function() {
 	  
 	$r.superClass("AbstractEntity");
     
+	// replace getters for Boolean from is... to get...
    	// it doesn't seem legal to have is... getters for type Boolean. For boolean it works.
 	// I don't understand how jhipster works with this; maybe its libs tolerate this; but not PropertyUtils.
-	$r.replaceRegexAll("Boolean is", "Boolean get");
+	$r.replaceRegexAll("public Boolean is", "public Boolean get");
 	   
 	$r.removeField("id");
 	$r.removeMethod("getId");
