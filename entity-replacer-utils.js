@@ -33,12 +33,12 @@ function applyModificationsToFile(entityName, fullPathReadFrom, fullPathWriteTo,
 		
 		javaText = generator.fs.read(fullPathWriteTo);
 		// match the whole text between {{{...}}} tags
-		var re = new RegExp('(\\{\\{\\{([\\s\\S]*?)\\}\\}\\})[\\s\\S]*?(?:(.*class[\\s\\S]*?\\{)|.*?(\\w+);)', 'g');
+		var re = new RegExp('(\\{\\{\\{([\\s\\S]*?)\\}\\}\\})[\\s\\S]*?(?:(.*class[\\s\\S]*?\\{)|.*?(\\w+)\\s*=.*?;|.*?(\\w+);)', 'g');
 		// iterate through whole file and get the instructions string between {{{...}}} for each field 
 		do {
 		var m = re.exec(javaText);
 		if (m) {
-			currentFieldOrClass = m[3] ? m[3] : m[4];
+			currentFieldOrClass = m[3] ? m[3] : (m[4] ? m[4] : m[5]);
 			generator.log(`${chalk.red("Executing from field/class: ")} ${currentFieldOrClass}`)
 			var currentInstructionsString = m[2];
 			// delete snippets like {{{ ...}}} from comments
@@ -78,7 +78,7 @@ var Replacer = {
 	var javaTextSync = currentEntityReplacerGenerator.fs.read(fullPathWriteTo);
 	currentEntityReplacerGenerator.log(`${chalk.green('Inserting before field')} ${currentFieldOrClass} ${insertion}`);
 	var isClass = currentFieldOrClass.includes("class");
-	var regex =  isClass ? new RegExp("(\s*" + currentFieldOrClass + "\\s*)") : new RegExp("(.*" + currentFieldOrClass + "\\s*;)");
+	var regex =  isClass ? new RegExp("(\s*" + currentFieldOrClass + "\\s*)") : new RegExp("(.*" + currentFieldOrClass + "=?.*?;)");
 	var charBeforeInsertion = isClass ? '' : '\t';
 	currentEntityReplacerGenerator.log(`${chalk.green('Regex searched when inserting before field')} ${regex.toString()}`);	
 	currentEntityReplacerGenerator.fs.write(path.join(process.cwd(), fullPathWriteTo), javaTextSync.replace(regex, charBeforeInsertion + insertion + '\n$1'));
