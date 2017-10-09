@@ -53,7 +53,10 @@ function applyModificationsToFile(entityName, fullPathReadFrom, fullPathWriteTo,
 		} while (m);
 		// empty comments may reside after deleting snippets like {{{...}}}
 		// from comments if those snippets were the only thing found in comments
-		generator.replaceContent(fullPathWriteTo, "\\s*\\/\\*[\\*\\s]+\\*\\/", "\n", true);		
+		generator.replaceContent(fullPathWriteTo, "\\s*\\/\\*[\\*\\s]+\\*\\/", "\n", true);
+		// comments with empty rows may also reside, so we delete the empty rows from comments (the lines which only contain *)
+		javaText = generator.fs.read(fullPathWriteTo);
+		generator.fs.write(path.join(process.cwd(), fullPathWriteTo), javaText.replace(new RegExp("\n*^\\s*\\*\\s*$", 'mg'), ""));		
 		
 }
 

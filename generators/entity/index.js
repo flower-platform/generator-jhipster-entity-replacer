@@ -47,7 +47,7 @@ module.exports = JhipsterGenerator.extend({
             javaDir = `${jhipsterConstants.SERVER_MAIN_SRC_DIR + this.packageFolder}/`;
 
 			if (entityName) {
-				this.log(`\n${chalk.bold.green('I\'m updating the entity for audit ')}${chalk.bold.yellow(this.entityConfig.entityClass)}`);				
+				this.log(`\n${chalk.bold.green('I\'m updating the entity for audit ')}${chalk.bold.yellow(this.entityConfig.entityClass)}`);			
 				fullPathReadFrom = `${javaDir}domain/${entityName}.java`;
 				fullPathWriteTo = `../${javaDir}domain/${entityName}.java`;
 				entityReplacerUtils.applyModificationsToFile(entityName, fullPathReadFrom, fullPathWriteTo, this);
