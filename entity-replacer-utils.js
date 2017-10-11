@@ -177,10 +177,10 @@ $r.delegateToCustomCode = function(withReturn, accessModifier, returnType, metho
 	var paramsAsStringForMethodCall = "";
 	for (var parameterName in params) {
 		paramsAsString += params[parameterName] + " " + parameterName + ", ";
-		paramsAsStringForMethodCall += parameterName + ", ";
+		paramsAsStringForMethodCall += ", " + parameterName;
 	}
 	paramsAsString = paramsAsString.trim().slice(0, -1);
-	paramsAsStringForMethodCall = paramsAsStringForMethodCall.trim().slice(0, -1);
+	paramsAsStringForMethodCall = paramsAsStringForMethodCall.trim();
 	
 	var firstMethodRow = "\t" + accessModifier + " " + returnType + " " + methodName + "(" + paramsAsString + ") {";
 	
@@ -188,7 +188,7 @@ $r.delegateToCustomCode = function(withReturn, accessModifier, returnType, metho
 	if (withReturn) {
 		callToCustomCode += "return ";		
 	}
-	callToCustomCode += entityName + "CustomCode."  + methodName + "(this, "  + paramsAsStringForMethodCall + ");"
+	callToCustomCode += entityName + "CustomCode."  + methodName + "(this"  + paramsAsStringForMethodCall + ");"
 	
 	var endMethod = "\n\t}";	
 	$r.insertCode(firstMethodRow + callToCustomCode + endMethod);
