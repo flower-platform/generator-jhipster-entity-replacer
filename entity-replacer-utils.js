@@ -9,6 +9,7 @@ module.exports = {
 function applyModificationsToFile(entityName, fullPathReadFrom, fullPathWriteTo, generator) {
 		// !!!all variables declared without `var` need to be available outside this module
 		currentEntityReplacerGenerator = generator;
+		currentEntity = entityName;
 		var javaText = generator.fs.read(fullPathReadFrom);
 		
 		// transfer java source code to the root of the project
@@ -171,6 +172,31 @@ $r.excludeDtoField = function() {
 	$r.insertElement("@GenEntityDtoField(inclusion=FieldInclusion.EXCLUDE)");	
 }
 
+$r.delegateToCustomCode = function(withReturn, accessModifier, returnType, methodName, params) {
+	var paramsAsString = "";
+	var paramsAsStringForMethodCall = "";
+	for (var parameterName in params) {
+		paramsAsString += params[parameterName] + " " + parameterName + ", ";
+		paramsAsStringForMethodCall += parameterName + ", ";
+	}
+	paramsAsString = paramsAsString.trim().slice(0, -1);
+	paramsAsStringForMethodCall = paramsAsStringForMethodCall.trim().slice(0, -1);
+	
+	var firstMethodRow = "\t" + accessModifier + " " + returnType + " " + methodName + "(" + paramsAsString + ") {";
+	
+	var callToCustomCode = "\n\t\t";
+	if (withReturn) {
+		callToCustomCode += "return ";		
+	}
+	callToCustomCode += entityName + "CustomCode."  + methodName + "(this, "  + paramsAsStringForMethodCall + ");"
+	
+	var endMethod = "\n\t}";	
+	$r.insertCode(firstMethodRow + callToCustomCode + endMethod);
+}
+
+$r.defaultConstructor = function() {
+	$r.insertCode("\tpublic " + entityName +  "() {} ");
+}
 // default function, invoked for each entity
 $r.entity = function() {
 	$r.insertImport("com.crispico.annotation.definition.GenEntityDto");
