@@ -17,6 +17,32 @@ function applyModificationsToFile(entityName, fullPathReadFrom, fullPathWriteTo,
 		// @ApiModelProperty("This is a comment bla bla. {{{// aici avem cod js pe care... }}}")  becomes @ApiModelProperty("This is a comment bla bla.") 		
 		var regexApiModelProp = '((?:@ApiModelProperty|@ApiModel)\\(.*?)\\{\\{\\{.*\\}\\}\\}(.*?\\))';
 		generator.replaceContent(fullPathWriteTo, regexApiModelProp, "$1$2", true);
+
+		javaText = generator.fs.read(fullPathWriteTo);
+		// match the whole text between {{{...}}} tags
+		var re = new RegExp('(\\{\\{\\{([\\s\\S]*?)\\}\\}\\})[\\s\\S]*?(?:(.*class[\\s\\S]*?\\{)|.*?(\\w+)\\s*=.*?;|.*?(\\w+);)', 'g');
+		// iterate through whole file and get the instructions string between {{{...}}} for each field which are stored in the array above as key value pairs
+		// key - field or class value - instruction
+		var bufferOfInstructionsToBeApplied = [];
+		do {
+		var m = re.exec(javaText);
+		if (m) {
+			currentFieldOrClass = m[3] ? m[3] : (m[4] ? m[4] : m[5]);
+			generator.log(`${chalk.red("Executing from field/class: ")} ${currentFieldOrClass}`)
+			bufferOfInstructionsToBeApplied[currentFieldOrClass] = m[2];
+			// delete snippets like {{{ ...}}} from comments
+			generator.replaceContent(fullPathWriteTo, m[1], "");
+			}
+		} while (m);
+		// empty comments may reside after deleting snippets like {{{...}}}
+		// from comments if those snippets were the only thing found in comments
+		generator.replaceContent(fullPathWriteTo, "\\s*\\/\\*[\\*\\s]+\\*\\/", "\n", true);
+		// comments with empty rows may also reside, so we delete the empty rows from comments (the lines which only contain *)
+		javaText = generator.fs.read(fullPathWriteTo);
+		generator.fs.write(path.join(process.cwd(), fullPathWriteTo), javaText.replace(new RegExp("\n*^\\s*\\*\\s*$", 'mg'), ""));		
+
+		
+		// apply instructions (default function and instructions from .jdl)
 		
 		// HACK: make sure we eval only once the content from jhipster-entity-replacer.js
 		// by checking if test function was declared; if it was not, we declare it
@@ -31,33 +57,16 @@ function applyModificationsToFile(entityName, fullPathReadFrom, fullPathWriteTo,
 			$r.entity();	
 		}
 		
-		javaText = generator.fs.read(fullPathWriteTo);
-		// match the whole text between {{{...}}} tags
-		var re = new RegExp('(\\{\\{\\{([\\s\\S]*?)\\}\\}\\})[\\s\\S]*?(?:(.*class[\\s\\S]*?\\{)|.*?(\\w+)\\s*=.*?;|.*?(\\w+);)', 'g');
-		// iterate through whole file and get the instructions string between {{{...}}} for each field 
-		do {
-		var m = re.exec(javaText);
-		if (m) {
-			currentFieldOrClass = m[3] ? m[3] : (m[4] ? m[4] : m[5]);
-			generator.log(`${chalk.red("Executing from field/class: ")} ${currentFieldOrClass}`)
-			var currentInstructionsString = m[2];
-			// delete snippets like {{{ ...}}} from comments
-			generator.replaceContent(fullPathWriteTo, m[1], "");
+		// apply stored instructions from {{{ }}}
+		for (currentFieldOrClass in bufferOfInstructionsToBeApplied) {
+			var currentInstructionsString = bufferOfInstructionsToBeApplied[currentFieldOrClass];
 			// evaluate whole current instruction string
 			if (currentInstructionsString != undefined && currentInstructionsString.length != 0){
 				var formattedComment = formatUtilsJH.formatComment(currentInstructionsString)
 				generator.log(`${chalk.cyan("Evaluation of ")} ${formattedComment.replace(/\\"/g, '"')}`)
 				eval(formattedComment.replace(/\\"/g, '"'));
 			}
-			}
-		} while (m);
-		// empty comments may reside after deleting snippets like {{{...}}}
-		// from comments if those snippets were the only thing found in comments
-		generator.replaceContent(fullPathWriteTo, "\\s*\\/\\*[\\*\\s]+\\*\\/", "\n", true);
-		// comments with empty rows may also reside, so we delete the empty rows from comments (the lines which only contain *)
-		javaText = generator.fs.read(fullPathWriteTo);
-		generator.fs.write(path.join(process.cwd(), fullPathWriteTo), javaText.replace(new RegExp("\n*^\\s*\\*\\s*$", 'mg'), ""));		
-		
+		}
 }
 
 var Replacer = {
