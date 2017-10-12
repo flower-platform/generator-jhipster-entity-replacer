@@ -91,10 +91,21 @@ var Replacer = {
 	var javaTextSync = currentEntityReplacerGenerator.fs.read(fullPathWriteTo);
 	currentEntityReplacerGenerator.log(`${chalk.green('Inserting before field')} ${currentFieldOrClass} ${insertion}`);
 	var isClass = currentFieldOrClass.includes("class");
-	var regex =  isClass ? new RegExp("(\s*" + currentFieldOrClass + "\\s*)") : new RegExp("(.*" + currentFieldOrClass + "=?.*?;)");
+	var regex;
+	if (isClass) {
+		// make regex just match the begining of the delcaration e.g. public class A instead of public class A implemenets ... extends ...
+		// because the extensions may be modified by the entity default function
+		var regexWithJustClassName = new RegExp("(public class \\w+)");			
+		regex = new RegExp("(" + regexWithJustClassName.exec(currentFieldOrClass)[1] + ".*{)");
+	} else {
+		regex = new RegExp("((private|public|protected).*" + currentFieldOrClass + ";)");
+		if (javaTextSync.search(regex) == - 1) {
+			regex = new RegExp("((private|public|protected).*" + currentFieldOrClass + " = .*?;)")
+		}
+	}
 	var charBeforeInsertion = isClass ? '' : '\t';
-	currentEntityReplacerGenerator.log(`${chalk.green('Regex searched when inserting before field')} ${regex.toString()}`);	
-	currentEntityReplacerGenerator.fs.write(path.join(process.cwd(), fullPathWriteTo), javaTextSync.replace(regex, charBeforeInsertion + insertion + '\n$1'));
+	currentEntityReplacerGenerator.log(`${chalk.green('Regex searched when inserting before field')} ${regex.toString()}`);
+	currentEntityReplacerGenerator.fs.write(path.join(process.cwd(), fullPathWriteTo), javaTextSync.replace(regex, insertion + '\n' + charBeforeInsertion + '$1'));
   },
   replaceRegexWithCurlyBraceBlock: function (regexString) {
 	currentEntityReplacerGenerator.log(`${chalk.green('Deleting method that matches regex ')} ${regexString}`);
