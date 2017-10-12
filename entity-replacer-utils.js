@@ -128,6 +128,37 @@ var Replacer = {
 			currentEntityReplacerGenerator.fs.write(path.join(process.cwd(), fullPathWriteTo), javaTextSync.replace(javaTextSync.substring(positionOfMatch, startIndex + 1), ""));	
 		}
 	}
+  },
+  replaceType: function(hasInitialization, newType, newIntialization) {
+	var javaTextSync = currentEntityReplacerGenerator.fs.read(fullPathWriteTo);
+	var oldType = "";
+	// replace in declaration
+	if (hasInitialization) {
+		var regexDeclarationPattern = new RegExp("(.*?)(\\S*)(\\s+" + currentFieldOrClass + ")(\\s*=\\s*)(.*)(;)");
+		var match  = regexDeclarationPattern.exec(javaTextSync);
+		oldType = match[2];
+		currentEntityReplacerGenerator.log(`${chalk.green('Replace type')} ${oldType} detected by  regex ${regexDeclarationPattern} with new type ${newType}`);
+		if (newIntialization != null && newIntialization.length != 0) {
+			this.replaceRegex(regexDeclarationPattern, `$1${newType}$3$4${newIntialization}$6`);
+		} else {
+			this.replaceRegex(regexDeclarationPattern, `$1${newType}$3$6`);
+		}
+	} else {
+		var regexDeclarationPattern = new RegExp("(.*?)(\\S*)(\\s+" + currentFieldOrClass + ")(;)");
+		var match  = regexDeclarationPattern.exec(javaTextSync);
+		oldType = match[2];
+		currentEntityReplacerGenerator.log(`${chalk.green('Replace type')} ${oldType} detected by  regex ${regexDeclarationPattern} with new type ${newType}`);
+		if (newIntialization != null && newIntialization.length != 0) {
+			this.replaceRegex(regexDeclarationPattern, `$1${newType}$3 = ${newIntialization}$4`);
+		} else {
+			this.replaceRegex(regexDeclarationPattern, `$1${newType}$3$4`);
+		}
+	}
+	var fieldCapitalized = currentFieldOrClass.charAt(0).toUpperCase() + currentFieldOrClass.slice(1);
+	//replace getter
+	this.replaceRegex(new RegExp('(.*?)(' + oldType + ')(\\s+get' + fieldCapitalized + '\\s*\\()'), `$1${newType}$3`);
+	//replace setter
+	this.replaceRegex(new RegExp('(set' + fieldCapitalized + '\\s*\\(.*?)(' + oldType + ')(\\s*' + currentFieldOrClass + '\\))'), `$1${newType}$3`);
   }
 };
 
@@ -190,13 +221,14 @@ $r.delegateToCustomCode = function(withReturn, accessModifier, returnType, metho
 	}
 	callToCustomCode += entityName + "CustomCode."  + methodName + "(this"  + paramsAsStringForMethodCall + ");"
 	
-	var endMethod = "\n\t}";	
+	var endMethod = "\n\t}\n";	
 	$r.insertCode(firstMethodRow + callToCustomCode + endMethod);
 }
 
 $r.defaultConstructor = function() {
 	$r.insertCode("\tpublic " + entityName +  "() {} ");
 }
+
 // default function, invoked for each entity
 $r.entity = function() {
 	$r.insertImport("com.crispico.annotation.definition.GenEntityDto");
