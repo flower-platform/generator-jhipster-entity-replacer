@@ -170,6 +170,8 @@ var Replacer = {
 	this.replaceRegex(new RegExp('(.*?)(' + oldType + ')(\\s+get' + fieldCapitalized + '\\s*\\()'), `$1${newType}$3`);
 	//replace setter
 	this.replaceRegex(new RegExp('(set' + fieldCapitalized + '\\s*\\(.*?)(' + oldType + ')(\\s*' + currentFieldOrClass + '\\))'), `$1${newType}$3`);
+	//replace constructor
+	this.replaceRegex(new RegExp('(public\\s*' + currentEntity +  '\\s*' + currentFieldOrClass + '\\s*\\(.*?)(' + oldType + ')(\\s*' + currentFieldOrClass + '\\))'), `$1${newType}$3`);
   }
 };
 
