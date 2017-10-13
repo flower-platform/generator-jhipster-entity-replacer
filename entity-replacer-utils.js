@@ -12,7 +12,7 @@ function applyModificationsToFile(entityName, fullPathReadFrom, fullPathWriteTo,
 		currentEntity = entityName;
 		var javaText = generator.fs.read(fullPathReadFrom);
 		
-		// transfer java source code to the root of the project
+		// transfer java source code to the root of the projec
 		currentEntityReplacerGenerator.fs.write(path.join(process.cwd(), fullPathWriteTo), javaText);
 		
 		// @ApiModelProperty("This is a comment bla bla. {{{// aici avem cod js pe care... }}}")  becomes @ApiModelProperty("This is a comment bla bla.") 		
@@ -21,7 +21,7 @@ function applyModificationsToFile(entityName, fullPathReadFrom, fullPathWriteTo,
 
 		javaText = generator.fs.read(fullPathWriteTo);
 		// match the whole text between {{{...}}} tags
-		var re = new RegExp('(\\{\\{\\{([\\s\\S]*?)\\}\\}\\})[\\s\\S]*?(?:(.*class[\\s\\S]*?\\{)|.*?(\\w+)\\s*=.*?;|.*?(\\w+);)', 'g');
+		var re = new RegExp('(\\{\\{\\{([\\s\\S]*?)\\}\\}\\})[\\s\\S]*?(?:private|public|protected)(?:(.*class[\\s\\S]*?\\{)|.*?(\\w+)\\s*=.*?;|.*?(\\w+);)', 'g');
 		// iterate through whole file and get the instructions string between {{{...}}} for each field which are stored in the array above as key value pairs
 		// key - field or class value - instruction
 		var bufferOfInstructionsToBeApplied = [];
@@ -145,20 +145,20 @@ var Replacer = {
 	var oldType = "";
 	// replace in declaration
 	if (hasInitialization) {
-		var regexDeclarationPattern = new RegExp("(.*?)(\\S*)(\\s+" + currentFieldOrClass + ")(\\s*=\\s*)(.*)(;)");
+		var regexDeclarationPattern = new RegExp("((?:private|public|protected).*?)(\\S*)(\\s+" + currentFieldOrClass + ")(\\s*=\\s*)(.*)(;)");
 		var match  = regexDeclarationPattern.exec(javaTextSync);
+		currentEntityReplacerGenerator.log(`${chalk.green('Replace type')} the old type detected by regex ${regexDeclarationPattern} with new type ${newType}`);
 		oldType = match[2];
-		currentEntityReplacerGenerator.log(`${chalk.green('Replace type')} ${oldType} detected by  regex ${regexDeclarationPattern} with new type ${newType}`);
 		if (newIntialization != null && newIntialization.length != 0) {
 			this.replaceRegex(regexDeclarationPattern, `$1${newType}$3$4${newIntialization}$6`);
 		} else {
 			this.replaceRegex(regexDeclarationPattern, `$1${newType}$3$6`);
 		}
 	} else {
-		var regexDeclarationPattern = new RegExp("(.*?)(\\S*)(\\s+" + currentFieldOrClass + ")(;)");
+		var regexDeclarationPattern = new RegExp("((?:private|public|protected).*?)(\\S*)(\\s+" + currentFieldOrClass + ")(;)");
 		var match  = regexDeclarationPattern.exec(javaTextSync);
+		currentEntityReplacerGenerator.log(`${chalk.green('Replace type')} the old type detected by regex ${regexDeclarationPattern} with new type ${newType}`);
 		oldType = match[2];
-		currentEntityReplacerGenerator.log(`${chalk.green('Replace type')} ${oldType} detected by  regex ${regexDeclarationPattern} with new type ${newType}`);
 		if (newIntialization != null && newIntialization.length != 0) {
 			this.replaceRegex(regexDeclarationPattern, `$1${newType}$3 = ${newIntialization}$4`);
 		} else {
@@ -232,14 +232,14 @@ $r.delegateToCustomCode = function(withReturn, accessModifier, returnType, metho
 	if (withReturn) {
 		callToCustomCode += "return ";		
 	}
-	callToCustomCode += entityName + "CustomCode."  + methodName + "(this"  + paramsAsStringForMethodCall + ");"
+	callToCustomCode += currentEntity + "CustomCode."  + methodName + "(this"  + paramsAsStringForMethodCall + ");"
 	
 	var endMethod = "\n\t}\n";	
 	$r.insertCode(firstMethodRow + callToCustomCode + endMethod);
 }
 
 $r.defaultConstructor = function() {
-	$r.insertCode("\tpublic " + entityName +  "() {} ");
+	$r.insertCode("\tpublic " + currentEntity +  "() {} ");
 }
 
 // default function, invoked for each entity
