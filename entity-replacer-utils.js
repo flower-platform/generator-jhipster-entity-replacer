@@ -95,8 +95,8 @@ var Replacer = {
 	if (isClass) {
 		// make regex just match the begining of the delcaration e.g. public class A instead of public class A implemenets ... extends ...
 		// because the extensions may be modified by the entity default function
-		var regexWithJustClassName = new RegExp("(public class \\w+)");			
-		regex = new RegExp("(" + regexWithJustClassName.exec(currentFieldOrClass)[1] + ".*{)");
+		var regexWithJustClassName = new RegExp("(class \\w+)");			
+		regex = new RegExp("((private|public|protected)\\s*" + regexWithJustClassName.exec(currentFieldOrClass)[1] + ".*{)");
 	} else {
 		regex = new RegExp("((private|public|protected).*" + currentFieldOrClass + ";)");
 		if (javaTextSync.search(regex) == - 1) {
@@ -262,6 +262,10 @@ $r.entity = function() {
    	// it doesn't seem legal to have is... getters for type Boolean. For boolean it works.
 	// I don't understand how jhipster works with this; maybe its libs tolerate this; but not PropertyUtils.
 	$r.replaceRegexAll("public Boolean is", "public Boolean get");
+	
+	// replace private access member modifiers with protected in order to be able to access them from CustomCode classes
+	// which are located in the same package
+	$r.replaceRegexAll("\s*private(.*;\\n)", "protected$1");
 	   
 	$r.removeField("id");
 	$r.removeMethod("getId");
