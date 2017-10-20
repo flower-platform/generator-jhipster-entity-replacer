@@ -6,13 +6,15 @@ module.exports = {
     applyModificationsToFile
 };
 
-function applyModificationsToFile(entityName, fullPathReadFrom, fullPathWriteTo, generator) {
+function applyModificationsToFile(entityName, readFrom, writeTo, generator) {
 		// !!!all variables declared without `var` need to be available outside this module
 		currentEntityReplacerGenerator = generator;
 		currentEntity = entityName;
+		fullPathReadFrom = readFrom;
+		fullPathWriteTo = writeTo;
 		var javaText = generator.fs.read(fullPathReadFrom);
 		
-		// transfer java source code to the root of the projec
+		// transfer java source code to the root of the project
 		currentEntityReplacerGenerator.fs.write(path.join(process.cwd(), fullPathWriteTo), javaText);
 		
 		// @ApiModelProperty("This is a comment bla bla. {{{// aici avem cod js pe care... }}}")  becomes @ApiModelProperty("This is a comment bla bla.") 		
@@ -29,10 +31,9 @@ function applyModificationsToFile(entityName, fullPathReadFrom, fullPathWriteTo,
 		var m = re.exec(javaText);
 		if (m) {
 			currentFieldOrClass = m[3] ? m[3] : (m[4] ? m[4] : m[5]);
-			generator.log(`${chalk.red("Executing from field/class: ")} ${currentFieldOrClass}`)
-			bufferOfInstructionsToBeApplied[currentFieldOrClass] = m[2];
 			// delete snippets like {{{ ...}}} from comments
 			generator.replaceContent(fullPathWriteTo, m[1], "");
+			bufferOfInstructionsToBeApplied[currentFieldOrClass] = m[2];
 			}
 		} while (m);
 		// empty comments may reside after deleting snippets like {{{...}}}
@@ -71,15 +72,18 @@ function applyModificationsToFile(entityName, fullPathReadFrom, fullPathWriteTo,
 }
 
 var Replacer = {
-  replaceRegex: function(replaceWhat, replaceWith) {
-	currentEntityReplacerGenerator.log(`${chalk.green('Replacing first match')} for ${replaceWhat} with ${replaceWith}`); 
+  replaceRegex: function(replaceWhat, replaceWith, startIndexOfMatchForCurrentFieldOrClass = 0) {
+	currentEntityReplacerGenerator.log(`${chalk.green('Replacing first match')} index: ${startIndexOfMatchForCurrentFieldOrClass} for ${replaceWhat} with ${replaceWith}`); 
 	var javaTextSync = currentEntityReplacerGenerator.fs.read(fullPathWriteTo);
-	currentEntityReplacerGenerator.fs.write(path.join(process.cwd(), fullPathWriteTo), javaTextSync.replace(new RegExp(replaceWhat), replaceWith));
+	var regex = new RegExp(replaceWhat);
+	regex.lastIndex = startIndexOfMatchForCurrentFieldOrClass;
+	currentEntityReplacerGenerator.fs.write(path.join(process.cwd(), fullPathWriteTo), javaTextSync.substr(0, startIndexOfMatchForCurrentFieldOrClass) + javaTextSync.substr(startIndexOfMatchForCurrentFieldOrClass).replace(regex, replaceWith));
   },
   replaceRegexAll: function(replaceWhat, replaceWith) {
 	currentEntityReplacerGenerator.log(`${chalk.green('Replacing ALL matches')} for ${replaceWhat} with ${replaceWith}`);
 	var javaTextSync = currentEntityReplacerGenerator.fs.read(fullPathWriteTo);	
-	currentEntityReplacerGenerator.fs.write(path.join(process.cwd(), fullPathWriteTo), javaTextSync.replace(new RegExp(replaceWhat, 'g'), replaceWith));
+	var regex = new RegExp(replaceWhat, 'g');
+	currentEntityReplacerGenerator.fs.write(path.join(process.cwd(), fullPathWriteTo), javaTextSync.replace(regex, replaceWith));
   },
   insertAboveClass: function(insertion) {
 	var regex =  new RegExp("(\\s*public class )");
@@ -169,9 +173,9 @@ var Replacer = {
 	//replace getter
 	this.replaceRegex(new RegExp('(.*?)(' + oldType + ')(\\s+get' + fieldCapitalized + '\\s*\\()'), `$1${newType}$3`);
 	//replace setter
-	this.replaceRegex(new RegExp('(set' + fieldCapitalized + '\\s*\\(.*?)(' + oldType + ')(\\s*' + currentFieldOrClass + '\\))'), `$1${newType}$3`);
-	//replace constructor
-	this.replaceRegex(new RegExp('(public\\s*' + currentEntity +  '\\s*' + currentFieldOrClass + '\\s*\\(.*?)(' + oldType + ')(\\s*' + currentFieldOrClass + '\\))'), `$1${newType}$3`);
+	this.replaceRegex(new RegExp('(set' + fieldCapitalized + '\\s*\\(.*?)(' + oldType + ')(\\s*\\w+\\))'), `$1${newType}$3`);
+	//replace factory setter
+	this.replaceRegex(new RegExp('(public\\s*' + currentEntity +  '\\s*' + currentFieldOrClass + '\\s*\\(.*?)(' + oldType + ')(\\s*\\w+\\))'), `$1${newType}$3`);
   }
 };
 
