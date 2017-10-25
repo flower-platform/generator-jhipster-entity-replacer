@@ -21,6 +21,7 @@ module.exports = JhipsterGenerator.extend({
             if (!this.jhipsterAppConfig) {
                 this.error('Can\'t read .yo-rc.json');
             }
+			this.generatedEntitiesFolder  = this.jhipsterAppConfig.generatedEntitiesFolder;
         },
         displayLogo() {
             // it's here to show that you can use functions from generator-jhipster
@@ -77,6 +78,11 @@ module.exports = JhipsterGenerator.extend({
 		
         // use constants from generator-constants.js
         javaDir = `${jhipsterConstants.SERVER_MAIN_SRC_DIR + this.jhipsterAppConfig.packageFolder}/`;
+		if(this.generatedEntitiesFolder != null && this.generatedEntitiesFolder.length > 0) {
+			generatedEntitiesJavaDir = `${this.generatedEntitiesFolder + this.jhipsterAppConfig.packageFolder}/`;
+		} else {
+			generatedEntitiesJavaDir = javaDir;
+		}
 
         // variable from questions
         this.message = this.props.message;
@@ -87,7 +93,7 @@ module.exports = JhipsterGenerator.extend({
 		this.existingEntities.forEach((entityName) => {
 		  fullPathReadFrom = `${javaDir}domain/${entityName}.java`;
 		  this.log(`${chalk.magenta("Processing")} ${fullPathReadFrom}`);
-		  fullPathWriteTo = `../${javaDir}domain/${entityName}.java`
+		  fullPathWriteTo = `../${generatedEntitiesJavaDir}domain/${entityName}.java`;
 		  entityReplacerUtils.applyModificationsToFile(entityName, fullPathReadFrom, fullPathWriteTo, this);
 		  isFirstIteration = false;
 		});

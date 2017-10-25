@@ -17,17 +17,17 @@ module.exports = JhipsterGenerator.extend({
         readConfig() {
 		  this.entityConfig = this.options.entityConfig;
 		  this.jhAppConfig = this.getJhipsterAppConfig();
+		  if (!this.jhAppConfig) {
+			this.error('Can\'t read .yo-rc.json');
+		  }		  
 		  this.packageFolder = this.jhAppConfig.packageFolder;
-            this.jhipsterAppConfig = this.getJhipsterAppConfig();
-            if (!this.jhipsterAppConfig) {
-                this.error('Can\'t read .yo-rc.json');
-            }
+		  this.generatedEntitiesFolder  = this.jhAppConfig.generatedEntitiesFolder;
 		  entityName = this.entityConfig.entityClass;
 		  // this option forces overwriting of files without user being prompted
 		  this.conflicter.force = true
         },
         displayLogo() {
-            this.log(chalk.white('Running22 ' + chalk.bold('JHipster entity-replacer') + ' Generator! ' + chalk.yellow('v' + packagejs.version + '\n')));
+            this.log(chalk.white('Running21 ' + chalk.bold('JHipster entity-replacer') + ' Generator! ' + chalk.yellow('v' + packagejs.version + '\n')));
         },
         validate() {
             // this shouldn't be run directly
@@ -43,13 +43,17 @@ module.exports = JhipsterGenerator.extend({
 				return;
 			}
 
-            // use constants from generator-constants.js
-            javaDir = `${jhipsterConstants.SERVER_MAIN_SRC_DIR + this.packageFolder}/`;
-
-			if (entityName) {
-				this.log(`\n${chalk.bold.green('I\'m updating the entity for audit ')}${chalk.bold.yellow(this.entityConfig.entityClass)}`);			
+            // use constants from generator-constants.js or configuration from .yo-rc.json
+			javaDir = `${jhipsterConstants.SERVER_MAIN_SRC_DIR + this.packageFolder}/`;
+			if(this.generatedEntitiesFolder != null && this.generatedEntitiesFolder.length > 0) {
+				generatedEntitiesJavaDir = `${this.generatedEntitiesFolder + this.packageFolder}/`;
+			} else {
+				generatedEntitiesJavaDir = javaDir;
+			}
+			if (entityName) {	
+				this.log(`\n${chalk.bold.green('I\'m updating the entity for audit ')}${chalk.bold.yellow(this.entityConfig.entityClass)}`);		
 				fullPathReadFrom = `${javaDir}domain/${entityName}.java`;
-				fullPathWriteTo = `../${javaDir}domain/${entityName}.java`;
+				fullPathWriteTo = `../${generatedEntitiesJavaDir}domain/${entityName}.java`;
 				entityReplacerUtils.applyModificationsToFile(entityName, fullPathReadFrom, fullPathWriteTo, this);
 			}       
         }/*,
