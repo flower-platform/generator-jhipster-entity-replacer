@@ -179,7 +179,7 @@ var Replacer = {
   }
 };
 
-// reused in several regexes
+// reused in several regexes;;
 const REGEX_ANNOTATIONS_MODIFIERS = "(\n?(?:.*@.*\\n)*.*)((?:private|protected|public).*?)";
 
 
@@ -283,3 +283,6 @@ $r.entity = function() {
 // (e.g. "<project>jhipster-import-jdl/jhipster-entity-replacer.js"). Use jhipster-entity-replacer.js to
 // fine tune the desired additional functions. And if the new functions are of general interest for other
 // projects (which is almost always the case) => migrate them here.
+
+// use `generatedEntitiesFolder` property from yo.rc.json's of the current execution directory if you
+// want your files to be generated somewhere else
