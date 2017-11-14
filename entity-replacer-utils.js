@@ -210,7 +210,7 @@ $r.superClass = function(superClass, updateClass = true, updateDto = true) {
 		if (typeof updateDto === 'string') {
 			dto = updateDto;
 		} else {
-			dto = 'com.crispico.xops6.shared.dto.' + superClass + "Dto";
+			dto = superClass + "Dto";
 		}
 		$r.replaceRegex("(@GenEntityDto\\(superClass =) .*?(\\.class)", "$1 " + dto + "$2");
 	}
