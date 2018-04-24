@@ -32,7 +32,7 @@ We don't actually use it. But without it, we get an ugly error each time we run 
 yarn global add https://github.com/flower-platform/generator-jhipster-entity-replacer
 ```
 **Note:**
-When installing the generator as global, the directory where it will be found is ``c:\Users\<USER>\AppData\Local\Yarn\config\global\node_modules``
+When installing the generator as global, the directory where it will be found is ``c:\Users\<USER>\AppData\Local\Yarn\config\global\node_modules``. Git should be installed on your system. It's probably the case already. If not, you should install it w/ their installer.
 
 And that's it! For apps based on Foundation Platform, there are preconfigured launch configs, so normally you don't need to do the steps below (i.e. "Usage" section). 
 
