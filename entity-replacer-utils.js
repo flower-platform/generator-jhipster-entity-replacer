@@ -216,8 +216,12 @@ $r.superClass = function(superClass, updateClass = true, updateDto = true) {
 	}
 }
 
+$r.includeDtoField = function() {
+	$r.insertElement('@GenEntityDtoField(inclusion="include")'); 
+}
+
 $r.excludeDtoField = function() {
-	$r.insertElement("@GenEntityDtoField(inclusion=FieldInclusion.EXCLUDE)");	
+	$r.insertElement('@GenEntityDtoField(inclusion="exclude")');	
 }
 
 $r.delegateToCustomCode = function(withReturn, accessModifier, returnType, methodName, params) {
@@ -261,10 +265,6 @@ $r.toString = function(instr, simpleMode = true) {
 	}
 	code += "\n}";
 	$r.insertCode(code);
-}
-
-$r.includeDtoField = function() {
-	$r.insertElement("@GenEntityDtoField(inclusion=FieldInclusion.INCLUDE)"); 
 }
 
 $r.dto = function(params) {
