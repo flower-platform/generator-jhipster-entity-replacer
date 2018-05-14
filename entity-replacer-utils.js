@@ -212,8 +212,12 @@ $r.superClass = function(superClass, updateClass = true, updateDto = true) {
 		} else {
 			dto = superClass + "Dto";
 		}
-		$r.replaceRegex("(@GenEntityDto\\(superClass =) .*?(\\.class)", "$1 " + dto + "$2");
+		$r.replaceRegex("(@GenEntityDto\\(superClassAsString =) .*?(AbstractEntityDto_Basic)", "$1 \"" + dto + "");
 	}
+}
+
+$r.superClassAsString = function(updateDto) {
+	$r.replaceRegex("(@GenEntityDto\\(superClass) .*?(\\.class)", "$1AsString = \"" + updateDto + "\"");
 }
 
 $r.includeDtoField = function() {
@@ -282,6 +286,7 @@ $r.entity = function() {
 	$r.insertImport("com.crispico.foundation.server.domain.AbstractEntity");
 	$r.insertImport("com.crispico.foundation.server.domain.AbstractNamedEntity");
 	$r.insertImport("com.crispico.foundation.annotation.definition.*");
+	$r.insertImport("com.crispico.foundation.annotation.definition.constants.FoundationAnnotationDefinitionConstants");
 	 
 	const DONT_EDIT = 
 		"/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////\n" +
