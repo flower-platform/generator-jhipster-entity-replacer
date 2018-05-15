@@ -212,12 +212,20 @@ $r.superClass = function(superClass, updateClass = true, updateDto = true) {
 		} else {
 			dto = superClass + "Dto";
 		}
-		$r.replaceRegex("(@GenEntityDto\\(superClass =) .*?(\\.class)", "$1 " + dto + "$2");
+		$r.replaceRegex("(@GenEntityDto\\(superClassAsString =) .*?(AbstractEntityDto_Basic)", "$1 \"" + dto + "");
 	}
 }
 
+$r.superClassAsString = function(updateDto) {
+	$r.replaceRegex("(@GenEntityDto\\(superClass) .*?(\\.class)", "$1AsString = \"" + updateDto + "\"");
+}
+
+$r.includeDtoField = function() {
+	$r.insertElement('@GenEntityDtoField(inclusion="include")'); 
+}
+
 $r.excludeDtoField = function() {
-	$r.insertElement("@GenEntityDtoField(inclusion=FieldInclusion.EXCLUDE)");	
+	$r.insertElement('@GenEntityDtoField(inclusion="exclude")');	
 }
 
 $r.delegateToCustomCode = function(withReturn, accessModifier, returnType, methodName, params) {
@@ -263,10 +271,6 @@ $r.toString = function(instr, simpleMode = true) {
 	$r.insertCode(code);
 }
 
-$r.includeDtoField = function() {
-	$r.insertElement("@GenEntityDtoField(inclusion=FieldInclusion.INCLUDE)"); 
-}
-
 $r.dto = function(params) {
 	var result = "\n\t\t dtoDescriptorCustomization = @DtoDescriptorCustomization(";
 	for (key in params) {
@@ -277,15 +281,12 @@ $r.dto = function(params) {
 
 // default function, invoked for each entity
 $r.entity = function() {
-	$r.insertImport("com.crispico.annotation.definition.GenEntityDto");
-	$r.insertImport("com.crispico.annotation.definition.GenEntityDtoField");
 	$r.insertImport("com.crispico.foundation.shared.dto_crud.AbstractEntityDto");
 	$r.insertImport("com.crispico.foundation.shared.dto_crud.AbstractNamedEntityDto");
 	$r.insertImport("com.crispico.foundation.server.domain.AbstractEntity");
 	$r.insertImport("com.crispico.foundation.server.domain.AbstractNamedEntity");
-	$r.insertImport("com.crispico.annotation.definition.GenDtoCrudRepositoryAndService");
-	$r.insertImport("com.crispico.annotation.definition.util.EntityConstants.*");
-	$r.insertImport("com.crispico.annotation.definition.dto_crud.DtoDescriptorCustomization");
+	$r.insertImport("com.crispico.foundation.annotation.definition.*");
+	$r.insertImport("com.crispico.foundation.annotation.definition.constants.FoundationAnnotationDefinitionConstants");
 	 
 	const DONT_EDIT = 
 		"/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////\n" +
@@ -295,8 +296,10 @@ $r.entity = function() {
 	// after last import and beginning of doc or annotation
 	$r.replaceRegex("(import .*\\s*)(/\\*|@)", "$1\n" + DONT_EDIT + "\n$2");
 
+	$r.insertAboveClass("@TriggerFoundationAnnotationProcessor");
 	$r.insertAboveClass("@GenEntityDto(superClass = AbstractEntityDto.class)");
-	$r.insertAboveClass("@GenDtoCrudRepositoryAndService");
+	$r.insertAboveClass("@GenRepository");
+	$r.insertAboveClass("@GenService");
 	  
 	$r.superClass("AbstractEntity");
     
