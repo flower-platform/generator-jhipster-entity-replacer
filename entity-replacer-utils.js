@@ -93,7 +93,7 @@ var Replacer = {
   },
   insertElement: function (insertion) {
 	var javaTextSync = currentEntityReplacerGenerator.fs.read(fullPathWriteTo);
-	currentEntityReplacerGenerator.log(`${chalk.green('Inserting before field')} ${currentFieldOrClass} ${insertion}`);
+	currentEntityReplacerGenerator.log(`${chalk.green('Inserting before field2')} ${currentFieldOrClass} ${insertion}`);
 	var isClass = currentFieldOrClass.includes("class");
 	var regex;
 	if (isClass) {
@@ -102,9 +102,9 @@ var Replacer = {
 		var regexWithJustClassName = new RegExp("(class \\w+)");			
 		regex = new RegExp("((private|public|protected)\\s*" + regexWithJustClassName.exec(currentFieldOrClass)[1] + ".*{)");
 	} else {
-		regex = new RegExp("((private|public|protected).*" + currentFieldOrClass + ";)");
+		regex = new RegExp("((private|public|protected).*?\\s" + currentFieldOrClass + ";)");
 		if (javaTextSync.search(regex) == - 1) {
-			regex = new RegExp("((private|public|protected).*" + currentFieldOrClass + " = .*?;)")
+			regex = new RegExp("((private|public|protected).*?\\s" + currentFieldOrClass + " = .*?;)")
 		}
 	}
 	var charBeforeInsertion = isClass ? '' : '\t';
