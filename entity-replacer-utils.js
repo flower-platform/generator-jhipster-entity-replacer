@@ -297,7 +297,7 @@ $r.entity = function() {
 	$r.replaceRegex("(import .*\\s*)(/\\*|@)", "$1\n" + DONT_EDIT + "\n$2");
 
 	$r.insertAboveClass("@TriggerFoundationAnnotationProcessor");
-	$r.insertAboveClass("@GenEntityDto(superClass = AbstractEntityDto.class)");
+	$r.insertAboveClass("@GenEntityDto");
 	$r.insertAboveClass("@GenRepository");
 	$r.insertAboveClass("@GenService");
 	  
