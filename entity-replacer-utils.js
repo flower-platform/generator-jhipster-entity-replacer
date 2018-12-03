@@ -212,7 +212,8 @@ $r.superClass = function(superClass, updateClass = true, updateDto = true) {
 		} else {
 			dto = superClass + "Dto";
 		}
-		$r.superClassAsString(dto);
+		$r.replaceRegex("@GenEntityDto\\(.*?(\n\|\r)+", "");
+		$r.insertAboveClass("@GenEntityDto(superClass = " + updateDto + ".class)");
 	}
 }
 
