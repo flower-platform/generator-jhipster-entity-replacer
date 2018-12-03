@@ -212,12 +212,13 @@ $r.superClass = function(superClass, updateClass = true, updateDto = true) {
 		} else {
 			dto = superClass + "Dto";
 		}
-		$r.replaceRegex("(@GenEntityDto\\(superClassAsString =) .*?(AbstractEntityDto_Basic)", "$1 \"" + dto + "");
+		$r.superClassAsString(updateDto);
 	}
 }
 
 $r.superClassAsString = function(updateDto) {
-	$r.replaceRegex("(@GenEntityDto\\(superClass) .*?(\\.class)", "$1AsString = \"" + updateDto + "\"");
+	$r.replaceRegex("@GenEntityDto\\(.*?(\n\|\r)+", "");
+	$r.insertAboveClass("@GenEntityDto(superClassAsString = \"" + updateDto + "\")");
 }
 
 $r.includeDtoField = function() {
@@ -287,6 +288,7 @@ $r.entity = function() {
 	$r.insertImport("com.crispico.foundation.server.domain.AbstractNamedEntity");
 	$r.insertImport("com.crispico.foundation.annotation.definition.*");
 	$r.insertImport("com.crispico.foundation.annotation.definition.constants.FoundationAnnotationDefinitionConstants");
+	$r.insertImport("com.crispico.foundation.server.annotation.FoundationEntity")
 	 
 	const DONT_EDIT = 
 		"/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////\n" +
@@ -297,9 +299,7 @@ $r.entity = function() {
 	$r.replaceRegex("(import .*\\s*)(/\\*|@)", "$1\n" + DONT_EDIT + "\n$2");
 
 	$r.insertAboveClass("@TriggerFoundationAnnotationProcessor");
-	$r.insertAboveClass("@GenEntityDto");
-	$r.insertAboveClass("@GenRepository");
-	$r.insertAboveClass("@GenService");
+	$r.insertAboveClass("@FoundationEntity");
 	  
 	$r.superClass("AbstractEntity");
     
