@@ -212,7 +212,7 @@ $r.superClass = function(superClass, updateClass = true, updateDto = true) {
 		} else {
 			dto = superClass + "Dto";
 		}
-		$r.superClassAsString(updateDto);
+		$r.superClassAsString(dto);
 	}
 }
 
