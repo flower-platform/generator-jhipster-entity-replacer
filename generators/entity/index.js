@@ -27,7 +27,7 @@ module.exports = JhipsterGenerator.extend({
 		  this.conflicter.force = true
         },
         displayLogo() {
-            this.log(chalk.white('Running21 ' + chalk.bold('JHipster entity-replacer') + ' Generator! ' + chalk.yellow('v' + packagejs.version + '\n')));
+            this.log(chalk.white('Running22 ' + chalk.bold('JHipster entity-replacer') + ' Generator! ' + chalk.yellow('v' + packagejs.version + '\n')));
         },
         validate() {
             // this shouldn't be run directly

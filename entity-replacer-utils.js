@@ -217,11 +217,6 @@ $r.superClass = function(superClass, updateClass = true, updateDto = true) {
 	}
 }
 
-$r.superClassAsString = function(updateDto) {
-	$r.replaceRegex("@GenEntityDto\\(.*?(\n\|\r)+", "");
-	$r.insertAboveClass("@GenEntityDto(superClassAsString = \"" + updateDto + "\")");
-}
-
 $r.includeDtoField = function() {
 	$r.insertElement('@GenEntityDtoField(inclusion="include")'); 
 }
@@ -287,9 +282,15 @@ $r.entity = function() {
 	$r.insertImport("com.crispico.foundation.shared.dto_crud.AbstractNamedEntityDto");
 	$r.insertImport("com.crispico.foundation.server.domain.AbstractEntity");
 	$r.insertImport("com.crispico.foundation.server.domain.AbstractNamedEntity");
-	$r.insertImport("com.crispico.foundation.annotation.definition.*");
+	$r.insertImport("com.crispico.foundation.annotation.definition.FoundationEntity");
+	$r.insertImport("com.crispico.foundation.annotation.definition.GenEntityDto");
+	$r.insertImport("com.crispico.foundation.annotation.definition.GenEntityDtos");
+	$r.insertImport("com.crispico.foundation.annotation.definition.GenEntityDtoField");
+	$r.insertImport("com.crispico.foundation.annotation.definition.GenEntityDtoFields");
+	$r.insertImport("com.crispico.foundation.annotation.definition.GenRepository");
+	$r.insertImport("com.crispico.foundation.annotation.definition.GenService");
+	$r.insertImport("com.crispico.foundation.annotation.definition.TriggerFoundationAnnotationProcessor");
 	$r.insertImport("com.crispico.foundation.annotation.definition.constants.FoundationAnnotationDefinitionConstants");
-	$r.insertImport("com.crispico.foundation.server.annotation.FoundationEntity")
 	 
 	const DONT_EDIT = 
 		"/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////\n" +
