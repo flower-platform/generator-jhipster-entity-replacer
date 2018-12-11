@@ -289,7 +289,6 @@ $r.entity = function() {
 	$r.insertImport("com.crispico.foundation.annotation.definition.GenEntityDtoFields");
 	$r.insertImport("com.crispico.foundation.annotation.definition.GenRepository");
 	$r.insertImport("com.crispico.foundation.annotation.definition.GenService");
-	$r.insertImport("com.crispico.foundation.annotation.definition.TriggerFoundationAnnotationProcessor");
 	$r.insertImport("com.crispico.foundation.annotation.definition.constants.FoundationAnnotationDefinitionConstants");
 	 
 	const DONT_EDIT = 
@@ -300,7 +299,6 @@ $r.entity = function() {
 	// after last import and beginning of doc or annotation
 	$r.replaceRegex("(import .*\\s*)(/\\*|@)", "$1\n" + DONT_EDIT + "\n$2");
 
-	$r.insertAboveClass("@TriggerFoundationAnnotationProcessor");
 	$r.insertAboveClass("@FoundationEntity");
 	  
 	$r.superClass("AbstractEntity");
