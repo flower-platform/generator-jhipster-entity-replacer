@@ -62,9 +62,12 @@ yo jhipster:import-jdl <jdl_file> --force
 
 # Troubleshooting
 
-1. It is possible that yarn global add <git_repo> reveals an error which indicates that it is unable to access the git repo.
-![alt text](https://user-images.githubusercontent.com/8615775/50286069-e237e500-0466-11e9-9bd2-fe0883d9537b.png)
+1) It is possible that yarn global add <git_repo> reveals an error which indicates that it is unable to access the git repo.
 This was solved by updating to the latest github version.
+
+![alt text](https://user-images.githubusercontent.com/8615775/50286069-e237e500-0466-11e9-9bd2-fe0883d9537b.png)
+
+
 
 
 
