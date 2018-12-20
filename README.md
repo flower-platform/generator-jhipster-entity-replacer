@@ -60,6 +60,14 @@ yo jhipster:import-jdl <jdl_file> --force
 
 - ``--force`` is an optional parameter that indicates to the importer that all the entities must be re-imported regardless they were updated or not in their .jdl. It's recommended, as you won't be bothered by prompts.
 
+# Troubleshooting
+
+1. It is possible that yarn global add <git_repo> reveals an error which indicates that it is unable to access the git repo.
+![alt text](https://user-images.githubusercontent.com/8615775/50286069-e237e500-0466-11e9-9bd2-fe0883d9537b.png)
+This was solved by updating to the latest github version.
+
+
+
 [npm-image]: https://img.shields.io/npm/v/generator-jhipster-entity-replacer.svg
 [npm-url]: https://npmjs.org/package/generator-jhipster-entity-replacer
 [travis-image]: https://travis-ci.org/entity/generator-jhipster-entity-replacer.svg?branch=master
