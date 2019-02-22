@@ -18,7 +18,7 @@ By doing this, other existing node packages are gone as well. But that's no prob
 
 ## Install JHipster
 
-[Install JHipster](https://jhipster.github.io/installation.html), the Yarn way. I.e. node, yarn, yo, jhipster.
+[Install JHipster](https://jhipster.github.io/installation.html), **the Yarn way!!** I.e. node, yarn, yo, jhipster.
 
 ## Install Gulp (globally)
 
