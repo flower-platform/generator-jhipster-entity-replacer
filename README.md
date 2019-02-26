@@ -21,7 +21,7 @@ By doing this, other existing node packages are gone as well. But that's no prob
 [Install JHipster](https://jhipster.github.io/installation.html), **the Yarn way!!** I.e. node, yarn, yo, jhipster.
 
 **Attention!** 
-In the above link you will be instructed to the latest version of jhipster with the command `yarn global add generator-jhipster`, but we have to install specific version 4.14.5 by typing instead `yarn global add generator-jhipster@4.14.5` because of some problems with the latest version.
+In the above link you will be instructed to install the latest version of jhipster with the command `yarn global add generator-jhipster`. We must install specific version 4.14.5 by typing instead `yarn global add generator-jhipster@4.14.5`.  There are some problems with the latest versions.
 
 
 ## Install Gulp (globally)
