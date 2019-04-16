@@ -41,6 +41,13 @@ We don't actually use it. But without it, we get an ugly error each time we run 
 ```bash
 yarn global add https://github.com/flower-platform/generator-jhipster-entity-replacer
 ```
+
+If you want a specific branch, then:
+
+```bash
+yarn global add https://github.com/flower-platform/generator-jhipster-entity-replacer#my-branch
+```
+
 **Note:**
 When installing the generator as global, the directory where it will be found is ``c:\Users\<USER>\AppData\Local\Yarn\config\global\node_modules``. Git should be installed on your system. It's probably the case already. If not, you should install it w/ their installer.
 
